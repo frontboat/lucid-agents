@@ -17,6 +17,16 @@ Each package README contains API details, environment variables, and complete ex
 
 ## Getting Started
 
+### Scaffold a New Agent
+
+```bash
+bunx @lucid-agents/create-agent-kit@latest
+```
+
+The CLI walks through template selection, environment setup, and optional dependency installation. Choose a project directory, decide whether to preconfigure ERC-8004 identity, and answer prompts for default pricing or entrypoint metadata.
+
+### Iterate Locally
+
 1. Install dependencies with `bun install`.
 2. Explore `packages/agent-kit` to scaffold an agent server via `createAgentApp`.
 3. Pair with `packages/agent-kit-identity` to register on-chain identity and surface trust metadata.
