@@ -2,15 +2,15 @@ name: CI
 
 on:
   push:
-    branches: ["**"]
+    branches: ['**']
     paths-ignore:
-      - "**/*.md"
-      - "**/*.MD"
-      - "**/*.png"
-      - "**/*.jpg"
-      - "**/*.jpeg"
-      - "**/*.gif"
-      - "**/*.svg"
+      - '**/*.md'
+      - '**/*.MD'
+      - '**/*.png'
+      - '**/*.jpg'
+      - '**/*.jpeg'
+      - '**/*.gif'
+      - '**/*.svg'
   pull_request:
 
 concurrency:
@@ -21,7 +21,8 @@ permissions:
   contents: read
 
 jobs:
-  build_and_test:
+  quality_checks:
+    name: Code Quality, Build & Test
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
