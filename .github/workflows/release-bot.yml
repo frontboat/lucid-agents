@@ -53,7 +53,7 @@ jobs:
         uses: changesets/action@v1
         with:
           version: bunx changeset version
-          publish: bunx changeset publish
+          publish: bun run release:publish
           title: "Version Packages"
           commit: "chore: version packages"
         env:
