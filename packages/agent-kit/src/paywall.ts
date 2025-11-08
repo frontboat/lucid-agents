@@ -26,8 +26,29 @@ export function withPayments({
   middlewareFactory = paymentMiddleware,
 }: WithPaymentsParams): boolean {
   if (!payments) return false;
+
+  if (!payments.payTo) {
+    console.error(
+      `[agent-kit] Payment configuration error for entrypoint "${entrypoint.key}":`,
+      "PAYMENTS_RECEIVABLE_ADDRESS is not set.",
+      "Please set the environment variable or configure payments.payTo in your agent setup."
+    );
+    throw new Error(
+      `Payment configuration error: PAYMENTS_RECEIVABLE_ADDRESS environment variable is not set. ` +
+        `This is required to receive payments. Please set PAYMENTS_RECEIVABLE_ADDRESS to your wallet address.`
+    );
+  }
+
   const network = entrypoint.network ?? payments.network;
-  if (!network) return false;
+  if (!network) {
+    console.error(
+      `[agent-kit] Payment configuration error for entrypoint "${entrypoint.key}":`,
+      "Network is not configured.",
+      "Please set the NETWORK environment variable or configure payments.network."
+    );
+    return false;
+  }
+
   const price = resolveEntrypointPrice(entrypoint, payments, kind);
   if (!price) return false;
   const requestSchema = toJsonSchemaOrUndefined(entrypoint.input);
