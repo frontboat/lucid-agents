@@ -60,9 +60,9 @@
       },
       {
         "key": "IDENTITY_AUTO_REGISTER",
-        "type": "input",
-        "message": "Auto-register on ERC-8004 registry? (true/false)",
-        "defaultValue": "true"
+        "type": "confirm",
+        "message": "Auto-register on ERC-8004 registry?",
+        "defaultValue": true
       },
       {
         "key": "PRIVATE_KEY",
