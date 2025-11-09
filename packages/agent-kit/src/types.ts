@@ -13,16 +13,15 @@ import type {
 } from "@lucid-agents/agent-core";
 import type { AP2ExtensionDescriptor, AP2Role } from "./ap2";
 import type {
-  TrustConfig,
   RegistrationEntry,
   TrustModel,
-} from "@lucid-agents/agent-kit-identity";
+} from '@lucid-agents/agent-kit-identity';
 
 export type {
-  TrustConfig,
   RegistrationEntry,
+  TrustConfig,
   TrustModel,
-} from "@lucid-agents/agent-kit-identity";
+} from '@lucid-agents/agent-kit-identity';
 
 export type SolanaAddress = string;
 
@@ -42,7 +41,7 @@ export type EntrypointDef = Omit<
   CoreEntrypointDef<ZodTypeAny | undefined, ZodTypeAny | undefined>,
   "network"
 > & {
-  network?: Network;
+  network?: X402Network;
 };
 
 export type Manifest = {
@@ -63,7 +62,7 @@ export type Manifest = {
 
 // A2A Agent Card (subset sufficient for interop)
 export type PaymentMethod = {
-  method: "x402";
+  method: 'x402';
   // The payee address (e.g., EVM 0x..., Solana base58)
   payee: `0x${string}` | SolanaAddress;
   // The network where payment should be settled
@@ -117,7 +116,7 @@ export type AgentCard = {
 
 export type AgentCardWithEntrypoints = AgentCard & {
   // Back-compat for our server: embed our previous manifest block
-  entrypoints: Manifest["entrypoints"];
+  entrypoints: Manifest['entrypoints'];
 };
 
 export type Network = X402Network;

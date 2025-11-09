@@ -1,18 +1,19 @@
-import { spawn } from "node:child_process";
-import { existsSync, realpathSync } from "node:fs";
-import fs from "node:fs/promises";
-import { basename, dirname, join, relative, resolve } from "node:path";
+import { spawn } from 'node:child_process';
+import { existsSync, realpathSync } from 'node:fs';
+import fs from 'node:fs/promises';
+import { basename, dirname, join, relative, resolve } from 'node:path';
 import process, {
   stdin as defaultInput,
   stdout as defaultOutput,
-} from "node:process";
-import { fileURLToPath } from "node:url";
-import { createInterface } from "node:readline/promises";
+} from 'node:process';
+import { createInterface } from 'node:readline/promises';
+import { fileURLToPath } from 'node:url';
 
 type CliOptions = {
   install: boolean;
   templateId?: string;
-  envMode: "prompt" | "yes" | "no";
+  skipWizard?: boolean;
+  templateArgs?: Map<string, string>;
 };
 
 type ParsedArgs = {
@@ -56,23 +57,23 @@ type RunOptions = {
   prompt?: PromptApi;
 };
 
-type OnboardingCondition = {
+type WizardCondition = {
   key: string;
   equals?: string | boolean;
   in?: Array<string | boolean>;
 };
 
-type OnboardingPrompt = {
+type WizardPrompt = {
   key: string;
-  type: "input" | "confirm" | "select";
+  type: 'input' | 'confirm' | 'select';
   message: string;
   defaultValue?: string | boolean;
   choices?: PromptChoice[];
-  when?: OnboardingCondition;
+  when?: WizardCondition;
 };
 
-type OnboardingConfig = {
-  prompts?: OnboardingPrompt[];
+type WizardConfig = {
+  prompts?: WizardPrompt[];
 };
 
 type TemplateMeta = {
@@ -80,7 +81,7 @@ type TemplateMeta = {
   name?: string;
   description?: string;
   adapter?: string;
-  onboarding?: OnboardingConfig;
+  wizard?: WizardConfig;
 };
 
 type TemplateDescriptor = {
@@ -89,7 +90,7 @@ type TemplateDescriptor = {
   title: string;
   description?: string;
   path: string;
-  onboarding?: OnboardingConfig;
+  wizard?: WizardConfig;
 };
 
 const ADAPTER_DISPLAY_NAMES: Record<string, string> = {
@@ -97,51 +98,41 @@ const ADAPTER_DISPLAY_NAMES: Record<string, string> = {
   tanstack: "TanStack Start",
 };
 
-type OnboardingAnswers = Map<string, string | boolean>;
+type WizardAnswers = Map<string, string | boolean>;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const TEMPLATE_ROOT = resolve(__dirname, "../templates");
+const TEMPLATE_ROOT = resolve(__dirname, '../templates');
 
 const LUCID_BANNER = [
-  "____   ____     ___   ____   ___________   ",
+  '____   ____     ___   ____   ___________   ',
 
-  "",
-  "",
+  '',
+  '',
   "MM'   `MM'     `M'  6MMMMb/ `MM`MMMMMMMb. ",
-  "MM     MM       M  8P    YM  MM MM    `Mb ",
-  "MM     MM       M 6M      Y  MM MM     MM ",
-  "MM     MM       M MM         MM MM     MM ",
-  "MM     MM       M MM         MM MM     MM ",
-  "MM     MM       M MM         MM MM     MM ",
-  "MM     YM       M YM      6  MM MM     MM ",
-  "MM    / 8b     d8  8b    d9  MM MM    .M9 ",
+  'MM     MM       M  8P    YM  MM MM    `Mb ',
+  'MM     MM       M 6M      Y  MM MM     MM ',
+  'MM     MM       M MM         MM MM     MM ',
+  'MM     MM       M MM         MM MM     MM ',
+  'MM     MM       M MM         MM MM     MM ',
+  'MM     YM       M YM      6  MM MM     MM ',
+  'MM    / 8b     d8  8b    d9  MM MM    .M9 ',
   "_MMMMMMM  YMMMMM9    YMMMM9  _MM_MMMMMMM9'",
 
-  "",
-  "       L U C I D  DREAMS   ",
-  "   Agent scaffolding toolkit  ",
+  '',
+  '       L U C I D  DREAMS   ',
+  '   Agent scaffolding toolkit  ',
 ];
 
-const DEFAULT_TEMPLATE_VALUES = {
-  AGENT_VERSION: "0.1.0",
-  AGENT_DESCRIPTION: "Starter agent generated with create-agent-kit",
-  ENTRYPOINT_KEY: "echo",
-  ENTRYPOINT_DESCRIPTION: "Returns text that you send to the agent.",
-  PAYMENTS_FACILITATOR_URL: "https://facilitator.daydreams.systems",
-  PAYMENTS_PAY_TO: "0xb308ed39d67D0d4BAe5BC2FAEF60c66BBb6AE429",
-  PAYMENTS_NETWORK: "base-sepolia",
-  PAYMENTS_DEFAULT_PRICE: "1000",
-  WALLET_CONNECT_PROJECT_ID: "demo-project-id",
-};
+// DEFAULT_TEMPLATE_VALUES removed - use template.json defaults only
 
-const DEFAULT_PROJECT_NAME = "agent-app";
-const PROJECT_NAME_PROMPT = "Project directory name:";
+const DEFAULT_PROJECT_NAME = 'agent-app';
+const PROJECT_NAME_PROMPT = 'Project directory name:';
 
 const defaultLogger: RunLogger = {
-  log: (message) => console.log(message),
-  warn: (message) => console.warn(message),
-  error: (message) => console.error(message),
+  log: message => console.log(message),
+  warn: message => console.warn(message),
+  error: message => console.error(message),
 };
 
 export async function runCli(
@@ -188,122 +179,146 @@ export async function runCli(
     template,
   });
 
-  const targetDir = projectName === "." ? cwd : resolve(cwd, projectName);
+  const targetDir = projectName === '.' ? cwd : resolve(cwd, projectName);
   const projectDirName = basename(targetDir);
   const packageName = toPackageName(projectDirName);
 
   await assertTemplatePresent(template.path);
   await assertTargetDirectory(targetDir);
-  const onboardingAnswers = await collectOnboardingValues({
+  const wizardAnswers = await collectWizardAnswers({
     template,
-    prompt,
+    prompt: parsed.options.skipWizard ? undefined : prompt,
     context: {
-      APP_NAME: projectDirName,
+      AGENT_NAME: projectDirName,
       PACKAGE_NAME: packageName,
     },
+    preSuppliedArgs: parsed.options.skipWizard
+      ? parsed.options.templateArgs
+      : undefined,
   });
   const replacements = buildTemplateReplacements({
     projectDirName,
     packageName,
-    answers: onboardingAnswers,
+    answers: wizardAnswers,
   });
   await copyTemplate(template.path, targetDir);
   await applyTemplateTransforms(targetDir, {
     packageName,
-    projectDirName,
     replacements,
   });
 
   await setupEnvironment({
     targetDir,
-    envMode: parsed.options.envMode,
-    prompt,
-    logger,
+    skipWizard: parsed.options.skipWizard ?? false,
+    wizardAnswers,
+    agentName: projectDirName,
+    template,
   });
 
   if (parsed.options.install) {
     await runInstall(targetDir, logger);
   }
 
-  const relativeTarget = relative(cwd, targetDir) || ".";
+  const relativeTarget = relative(cwd, targetDir) || '.';
   const nextSteps = [
-    relativeTarget !== "." ? `cd ${relativeTarget}` : null,
-    !parsed.options.install ? "bun install" : null,
-    "bun run dev",
+    relativeTarget !== '.' ? `cd ${relativeTarget}` : null,
+    !parsed.options.install ? 'bun install' : null,
+    'bun run dev',
   ].filter(Boolean);
 
-  logger.log("");
+  logger.log('');
   logger.log(`✨  Created agent app in ${relativeTarget}`);
-  logger.log("Next steps:");
+  logger.log('Next steps:');
   nextSteps.forEach((step, index) => {
     logger.log(`  ${index + 1}. ${step}`);
   });
-  logger.log("");
-  logger.log("Happy hacking!");
+  logger.log('');
+  logger.log('Happy hacking!');
 }
 
 export type { PromptApi, RunLogger };
 
 function parseArgs(args: string[]): ParsedArgs {
-  const options: CliOptions = { install: false, envMode: "prompt" };
+  const options: CliOptions = {
+    install: false,
+    skipWizard: false,
+    templateArgs: new Map(),
+  };
   const positional: string[] = [];
   let showHelp = false;
 
   for (let i = 0; i < args.length; i += 1) {
     const arg = args[i];
 
-    if (arg === "--install" || arg === "-i") {
+    if (arg === '--install' || arg === '-i') {
       options.install = true;
-    } else if (arg === "--no-install") {
+    } else if (arg === '--no-install') {
       options.install = false;
-    } else if (arg === "--help" || arg === "-h") {
+    } else if (arg === '--help' || arg === '-h') {
       showHelp = true;
-    } else if (arg === "--env") {
-      options.envMode = "yes";
-    } else if (arg === "--no-env") {
-      options.envMode = "no";
-    } else if (arg?.startsWith("--env=")) {
-      const value = arg.slice("--env=".length);
-      options.envMode = parseEnvMode(value);
-    } else if (arg === "--template" || arg === "-t") {
+    } else if (arg === '--wizard=no' || arg === '--no-wizard') {
+      options.skipWizard = true;
+    } else if (arg === '--non-interactive') {
+      options.skipWizard = true;
+    } else if (arg === '--template' || arg === '-t') {
       const value = args[i + 1];
       if (!value) {
-        throw new Error("Expected value after --template");
+        throw new Error('Expected value after --template');
       }
       options.templateId = value;
       i += 1;
-    } else if (arg?.startsWith("--template=")) {
-      options.templateId = arg.slice("--template=".length);
-    } else {
-      positional.push(arg ?? "");
+    } else if (arg?.startsWith('--template=')) {
+      options.templateId = arg.slice('--template='.length);
+    } else if (arg?.startsWith('--') && arg.includes('=')) {
+      // Capture template arguments like --SOME_KEY=value
+      const equalIndex = arg.indexOf('=');
+      const key = arg.slice(2, equalIndex);
+      const value = arg.slice(equalIndex + 1);
+      if (key.length > 0) {
+        options.templateArgs?.set(key, value);
+      }
+    } else if (!arg?.startsWith('-')) {
+      positional.push(arg ?? '');
     }
   }
 
   return { options, target: positional[0] ?? null, showHelp };
 }
 
-function parseEnvMode(value: string): CliOptions["envMode"] {
-  if (value === "yes" || value === "true" || value === "auto") return "yes";
-  if (value === "no" || value === "false" || value === "skip") return "no";
-  if (value === "prompt" || value === "ask") return "prompt";
-  throw new Error(
-    `Invalid value for --env: ${value}. Expected one of: prompt, yes, no.`
-  );
-}
-
 function printHelp(logger: RunLogger) {
-  logger.log("Usage: npx create-agent-kit <app-name> [options]");
-  logger.log("");
-  logger.log("Options:");
-  logger.log("  --install, -i        Run `bun install` after scaffolding");
-  logger.log("  --no-install         Skip dependency installation (default)");
-  logger.log("  --template, -t NAME  Use a specific template directory");
-  logger.log("  --env[=MODE]         Configure env setup (prompt|yes|no)");
-  logger.log("  --no-env             Skip env setup");
+  logger.log('Usage: bunx @lucid-agents/create-agent-kit <app-name> [options]');
+  logger.log('');
+  logger.log('Options:');
+  logger.log(
+    '  -t, --template <id>   Select template (blank, axllm, axllm-flow, identity)'
+  );
+  logger.log('  -i, --install         Run bun install after scaffolding');
+  logger.log('  --no-install          Skip bun install');
+  logger.log('  --wizard=no           Skip wizard, use template defaults');
+  logger.log('  --non-interactive     Same as --wizard=no');
+  logger.log(
+    '  --KEY=value           Pass template argument (use with --non-interactive)'
+  );
+  logger.log('  -h, --help            Show this help');
+  logger.log('');
+  logger.log('Examples:');
+  logger.log('  bunx @lucid-agents/create-agent-kit my-agent');
+  logger.log(
+    '  bunx @lucid-agents/create-agent-kit my-agent --template=identity --install'
+  );
+  logger.log('  bunx @lucid-agents/create-agent-kit my-agent --wizard=no');
+  logger.log('');
+  logger.log('Non-interactive with template arguments:');
+  logger.log(
+    '  bunx @lucid-agents/create-agent-kit my-agent --template=identity \\'
+  );
+  logger.log('    --non-interactive \\');
+  logger.log('    --AGENT_DESCRIPTION="My agent" \\');
+  logger.log('    --PAYMENTS_RECEIVABLE_ADDRESS="0x..."');
 }
 
 function printBanner(logger: RunLogger) {
-  LUCID_BANNER.forEach((line) => logger.log(line));
+  LUCID_BANNER.forEach(line => logger.log(line));
 }
 
 async function loadTemplates(
@@ -316,23 +331,23 @@ async function loadTemplates(
     if (!entry.isDirectory()) continue;
     const id = entry.name;
     const path = join(templateRoot, id);
-    const metaPath = join(path, "template.json");
+    const metaPath = join(path, 'template.json');
     let title = toTitleCase(id);
     let description: string | undefined;
-    let onboarding: OnboardingConfig | undefined;
+    let wizard: WizardConfig | undefined;
     let adapter = "default";
 
     try {
-      const raw = await fs.readFile(metaPath, "utf8");
+      const raw = await fs.readFile(metaPath, 'utf8');
       const meta = JSON.parse(raw) as TemplateMeta;
       title = meta.name ?? toTitleCase(id);
       description = meta.description;
-      onboarding = normalizeOnboardingConfig(meta.onboarding);
+      wizard = normalizeWizardConfig(meta.wizard);
       if (meta.adapter) {
         adapter = meta.adapter.toLowerCase();
       }
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
         throw error;
       }
     }
@@ -343,7 +358,7 @@ async function loadTemplates(
       title,
       description,
       path,
-      onboarding,
+      wizard,
     });
   }
 
@@ -354,26 +369,26 @@ function formatAdapterName(adapter: string): string {
   return ADAPTER_DISPLAY_NAMES[adapter] ?? toTitleCase(adapter);
 }
 
-function normalizeOnboardingConfig(
-  config?: OnboardingConfig
-): OnboardingConfig | undefined {
+function normalizeWizardConfig(
+  config?: WizardConfig
+): WizardConfig | undefined {
   if (!config) return undefined;
   const prompts =
     config.prompts
-      ?.map((prompt) => {
+      ?.map((prompt: any) => {
         if (!prompt || !prompt.key || !prompt.type) {
           return undefined;
         }
         if (
-          prompt.type !== "input" &&
-          prompt.type !== "confirm" &&
-          prompt.type !== "select"
+          prompt.type !== 'input' &&
+          prompt.type !== 'confirm' &&
+          prompt.type !== 'select'
         ) {
           return undefined;
         }
         return { ...prompt };
       })
-      .filter((prompt): prompt is OnboardingPrompt => Boolean(prompt)) ?? [];
+      .filter((prompt): prompt is WizardPrompt => Boolean(prompt)) ?? [];
 
   if (prompts.length === 0) {
     return undefined;
@@ -391,9 +406,9 @@ async function resolveTemplate(params: {
   const { templates, requestedId, prompt, logger } = params;
 
   if (requestedId) {
-    const match = templates.find((t) => t.id === requestedId);
+    const match = templates.find(t => t.id === requestedId);
     if (!match) {
-      const available = templates.map((t) => t.id).join(", ");
+      const available = templates.map(t => t.id).join(', ');
       throw new Error(
         `Unknown template "${requestedId}". Available templates: ${available}`
       );
@@ -438,7 +453,7 @@ async function resolveTemplate(params: {
   }
 
   if (!prompt) {
-    const available = candidates.map((t) => t.id).join(", ");
+    const available = candidates.map((t) => t.id).join(', ');
     throw new Error(
       `Multiple templates available for adapter "${selectedAdapter}" (${available}). Re-run with --template <name>.`
     );
@@ -451,7 +466,7 @@ async function resolveTemplate(params: {
   }));
 
   const selection = await prompt.select({
-    message: "Select a template variant:",
+    message: 'Select a template:',
     choices,
   });
 
@@ -468,19 +483,19 @@ async function resolveTemplate(params: {
 function toTitleCase(value: string) {
   return value
     .split(/[-_]/g)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
+    .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
 }
 
 function toPackageName(input: string): string {
   const normalized = input
     .trim()
     .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9._-]/g, "-")
-    .replace(/^-+/, "")
-    .replace(/-+$/, "");
-  return normalized.length > 0 ? normalized : "agent-app";
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9._-]/g, '-')
+    .replace(/^-+/, '')
+    .replace(/-+$/, '');
+  return normalized.length > 0 ? normalized : 'agent-app';
 }
 
 async function resolveProjectName(params: {
@@ -517,7 +532,7 @@ function buildDefaultProjectName(params: {
   const templateId = params.parsed.options.templateId ?? params.template?.id;
 
   const candidateSource =
-    typeof templateId === "string" && templateId.length > 0
+    typeof templateId === 'string' && templateId.length > 0
       ? templateId
       : DEFAULT_PROJECT_NAME;
 
@@ -526,43 +541,54 @@ function buildDefaultProjectName(params: {
     candidate = DEFAULT_PROJECT_NAME;
   }
 
-  if (
-    candidate !== DEFAULT_PROJECT_NAME &&
-    !candidate.endsWith("-agent")
-  ) {
+  if (candidate !== DEFAULT_PROJECT_NAME && !candidate.endsWith('-agent')) {
     candidate = `${candidate}-agent`;
   }
 
   return candidate;
 }
 
-async function collectOnboardingValues(params: {
+async function collectWizardAnswers(params: {
   template: TemplateDescriptor;
   prompt?: PromptApi;
   context: Record<string, string>;
-}): Promise<OnboardingAnswers> {
-  const { template, prompt, context } = params;
-  const answers: OnboardingAnswers = new Map();
-  const prompts = template.onboarding?.prompts ?? [];
+  preSuppliedArgs?: Map<string, string>;
+}): Promise<WizardAnswers> {
+  const { template, prompt, context, preSuppliedArgs } = params;
+  const answers: WizardAnswers = new Map();
+  const prompts = template.wizard?.prompts ?? [];
 
   for (const question of prompts) {
-    if (!shouldAskOnboardingPrompt(question, answers)) {
+    // Check if we have a pre-supplied value for this key
+    if (preSuppliedArgs?.has(question.key)) {
+      const preSupplied = preSuppliedArgs.get(question.key);
+      if (question.type === 'confirm') {
+        const normalized = preSupplied?.trim().toLowerCase() ?? '';
+        const boolValue = ['true', 'yes', 'y', '1'].includes(normalized);
+        answers.set(question.key, boolValue);
+      } else {
+        answers.set(question.key, sanitizeAnswerString(preSupplied ?? ''));
+      }
       continue;
     }
 
-    const defaultValue = resolveOnboardingDefault({
+    if (!shouldAskWizardPrompt(question, answers)) {
+      continue;
+    }
+
+    const defaultValue = resolveWizardDefault({
       question,
       context,
       answers,
     });
 
-    const response = await askOnboardingPrompt({
+    const response = await askWizardPrompt({
       promptApi: prompt,
       question,
       defaultValue,
     });
 
-    if (question.type === "confirm") {
+    if (question.type === 'confirm') {
       answers.set(question.key, Boolean(response));
     } else {
       answers.set(question.key, sanitizeAnswerString(String(response)));
@@ -572,9 +598,9 @@ async function collectOnboardingValues(params: {
   return answers;
 }
 
-function shouldAskOnboardingPrompt(
-  question: OnboardingPrompt,
-  answers: OnboardingAnswers
+function shouldAskWizardPrompt(
+  question: WizardPrompt,
+  answers: WizardAnswers
 ): boolean {
   if (!question.when) return true;
   const gateValue = answers.get(question.when.key);
@@ -587,46 +613,43 @@ function shouldAskOnboardingPrompt(
   return true;
 }
 
-function resolveOnboardingDefault(params: {
-  question: OnboardingPrompt;
+function resolveWizardDefault(params: {
+  question: WizardPrompt;
   context: Record<string, string>;
-  answers: OnboardingAnswers;
+  answers: WizardAnswers;
 }): string | boolean | undefined {
   const { question, context, answers } = params;
-  const baseContext = {
-    ...DEFAULT_TEMPLATE_VALUES,
-    ...context,
-  };
+  const baseContext = context;
 
-  if (question.type === "confirm") {
-    if (typeof question.defaultValue === "boolean") {
+  if (question.type === 'confirm') {
+    if (typeof question.defaultValue === 'boolean') {
       return question.defaultValue;
     }
-    if (typeof question.defaultValue === "string") {
+    if (typeof question.defaultValue === 'string') {
       const normalized = question.defaultValue.trim().toLowerCase();
-      if (["true", "yes", "y", "1"].includes(normalized)) return true;
-      if (["false", "no", "n", "0"].includes(normalized)) return false;
+      if (['true', 'yes', 'y', '1'].includes(normalized)) return true;
+      if (['false', 'no', 'n', '0'].includes(normalized)) return false;
     }
     return undefined;
   }
 
-  if (typeof question.defaultValue === "string") {
+  if (typeof question.defaultValue === 'string') {
     return interpolateTemplateString(
       question.defaultValue,
       baseContext,
       answers
     );
   }
-  if (typeof question.defaultValue === "boolean") {
-    return question.defaultValue ? "true" : "false";
+  if (typeof question.defaultValue === 'boolean') {
+    return question.defaultValue ? 'true' : 'false';
   }
 
   return undefined;
 }
 
-async function askOnboardingPrompt(params: {
+async function askWizardPrompt(params: {
   promptApi?: PromptApi;
-  question: OnboardingPrompt;
+  question: WizardPrompt;
   defaultValue: string | boolean | undefined;
 }): Promise<string | boolean> {
   const { promptApi, question, defaultValue } = params;
@@ -635,9 +658,9 @@ async function askOnboardingPrompt(params: {
     return getNonInteractiveAnswer(question, defaultValue);
   }
 
-  if (question.type === "input") {
+  if (question.type === 'input') {
     const defaultString =
-      typeof defaultValue === "string" ? defaultValue : undefined;
+      typeof defaultValue === 'string' ? defaultValue : undefined;
     const answer = await promptApi.input({
       message: question.message,
       defaultValue: defaultString,
@@ -645,15 +668,15 @@ async function askOnboardingPrompt(params: {
     return sanitizeAnswerString(answer);
   }
 
-  if (question.type === "confirm") {
+  if (question.type === 'confirm') {
     const defaultBool =
-      typeof defaultValue === "boolean"
+      typeof defaultValue === 'boolean'
         ? defaultValue
-        : typeof defaultValue === "string"
-        ? ["true", "yes", "y", "1"].includes(
-            defaultValue.trim().toLowerCase()
-          )
-        : false;
+        : typeof defaultValue === 'string'
+          ? ['true', 'yes', 'y', '1'].includes(
+              defaultValue.trim().toLowerCase()
+            )
+          : false;
 
     return promptApi.confirm({
       message: question.message,
@@ -675,23 +698,23 @@ async function askOnboardingPrompt(params: {
 }
 
 function getNonInteractiveAnswer(
-  question: OnboardingPrompt,
+  question: WizardPrompt,
   defaultValue: string | boolean | undefined
 ): string | boolean {
-  if (question.type === "confirm") {
-    if (typeof defaultValue === "boolean") {
+  if (question.type === 'confirm') {
+    if (typeof defaultValue === 'boolean') {
       return defaultValue;
     }
-    if (typeof defaultValue === "string") {
+    if (typeof defaultValue === 'string') {
       const normalized = defaultValue.trim().toLowerCase();
-      if (["true", "yes", "y", "1"].includes(normalized)) return true;
-      if (["false", "no", "n", "0"].includes(normalized)) return false;
+      if (['true', 'yes', 'y', '1'].includes(normalized)) return true;
+      if (['false', 'no', 'n', '0'].includes(normalized)) return false;
     }
     return false;
   }
 
-  if (question.type === "select") {
-    if (typeof defaultValue === "string" && defaultValue.length > 0) {
+  if (question.type === 'select') {
+    if (typeof defaultValue === 'string' && defaultValue.length > 0) {
       return sanitizeAnswerString(defaultValue);
     }
     const choice = question.choices?.[0];
@@ -701,195 +724,86 @@ function getNonInteractiveAnswer(
     return sanitizeAnswerString(choice.value);
   }
 
-  if (typeof defaultValue === "string") {
+  if (typeof defaultValue === 'string') {
     return sanitizeAnswerString(defaultValue);
   }
 
-  return "";
+  return '';
 }
 
 function interpolateTemplateString(
   template: string,
   context: Record<string, string>,
-  answers: OnboardingAnswers
+  answers: WizardAnswers
 ): string {
   return template.replace(/{{([A-Z0-9_]+)}}/g, (_, token: string) => {
     const fromAnswers = answers.get(token);
-    if (typeof fromAnswers === "string") {
+    if (typeof fromAnswers === 'string') {
       return fromAnswers;
     }
-    if (typeof fromAnswers === "boolean") {
-      return fromAnswers ? "true" : "false";
+    if (typeof fromAnswers === 'boolean') {
+      return fromAnswers ? 'true' : 'false';
     }
 
     if (Object.prototype.hasOwnProperty.call(context, token)) {
-      return context[token] ?? "";
+      return context[token] ?? '';
     }
 
-    const defaultValue =
-      DEFAULT_TEMPLATE_VALUES[token as keyof typeof DEFAULT_TEMPLATE_VALUES];
-    if (typeof defaultValue === "string") {
-      return defaultValue;
-    }
-    return "";
+    return '';
   });
 }
 
 function sanitizeAnswerString(value: string): string {
-  return value.replace(/\r/g, "").trim();
+  return value.replace(/\r/g, '').trim();
 }
 
 function buildTemplateReplacements(params: {
   projectDirName: string;
   packageName: string;
-  answers: OnboardingAnswers;
+  answers: WizardAnswers;
 }): Record<string, string> {
-  const { projectDirName, packageName, answers } = params;
+  const { projectDirName, packageName } = params;
 
-  const agentDescription = getStringAnswer(
-    answers,
-    "AGENT_DESCRIPTION",
-    DEFAULT_TEMPLATE_VALUES.AGENT_DESCRIPTION
-  );
-  const agentVersion = getStringAnswer(
-    answers,
-    "AGENT_VERSION",
-    DEFAULT_TEMPLATE_VALUES.AGENT_VERSION
-  );
-  const entrypointKey = toEntrypointKey(
-    getStringAnswer(
-      answers,
-      "ENTRYPOINT_KEY",
-      DEFAULT_TEMPLATE_VALUES.ENTRYPOINT_KEY
-    )
-  );
-  const entrypointDescription = getStringAnswer(
-    answers,
-    "ENTRYPOINT_DESCRIPTION",
-    DEFAULT_TEMPLATE_VALUES.ENTRYPOINT_DESCRIPTION
-  );
-
-  const enablePayments = getBooleanAnswer(answers, "ENABLE_PAYMENTS", false);
-  const paymentsFacilitator = getStringAnswer(
-    answers,
-    "PAYMENTS_FACILITATOR_URL",
-    DEFAULT_TEMPLATE_VALUES.PAYMENTS_FACILITATOR_URL
-  );
-  const paymentsNetwork = getStringAnswer(
-    answers,
-    "PAYMENTS_NETWORK",
-    DEFAULT_TEMPLATE_VALUES.PAYMENTS_NETWORK
-  );
-  const paymentsPayTo = getStringAnswer(
-    answers,
-    "PAYMENTS_PAY_TO",
-    DEFAULT_TEMPLATE_VALUES.PAYMENTS_PAY_TO
-  );
-  const paymentsDefaultPrice = getStringAnswer(
-    answers,
-    "PAYMENTS_DEFAULT_PRICE",
-    DEFAULT_TEMPLATE_VALUES.PAYMENTS_DEFAULT_PRICE
-  );
-  const entrypointPrice = getStringAnswer(
-    answers,
-    "ENTRYPOINT_PRICE",
-    paymentsDefaultPrice
-  );
-  const walletConnectProjectId = getStringAnswer(
-    answers,
-    "WALLET_CONNECT_PROJECT_ID",
-    DEFAULT_TEMPLATE_VALUES.WALLET_CONNECT_PROJECT_ID
-  );
-
-  const agentOptions = enablePayments
-    ? [
-        "{",
-        "  config: {",
-        "    payments: {",
-        `      facilitatorUrl: "${paymentsFacilitator}",`,
-        `      payTo: "${paymentsPayTo}",`,
-        `      network: "${paymentsNetwork}",`,
-        `      defaultPrice: "${paymentsDefaultPrice}",`,
-        "    },",
-        "  },",
-        "  useConfigPayments: true,",
-        "}",
-      ].join("\n")
-    : "{}";
-
-  const entrypointPriceLine = enablePayments
-    ? `  price: "${entrypointPrice}",\n`
-    : `  // price: "${entrypointPrice}",\n`;
-
-  const entrypointPriceNote = enablePayments
-    ? ` (price: ${entrypointPrice} base units)`
-    : "";
-
+  // Only used for package.json and README.md now
   return {
-    APP_NAME: projectDirName,
+    AGENT_NAME: projectDirName,
     PACKAGE_NAME: packageName,
-    AGENT_DESCRIPTION: agentDescription,
-    AGENT_VERSION: agentVersion,
-    ENTRYPOINT_KEY: entrypointKey,
-    ENTRYPOINT_DESCRIPTION: entrypointDescription,
-    ENTRYPOINT_PRICE: entrypointPrice,
-    ENTRYPOINT_PRICE_LINE: entrypointPriceLine,
-    ENTRYPOINT_PRICE_NOTE: entrypointPriceNote,
-    AGENT_OPTIONS: agentOptions,
-    PAYMENTS_FACILITATOR_URL: paymentsFacilitator,
-    PAYMENTS_NETWORK: paymentsNetwork,
-    PAYMENTS_PAY_TO: paymentsPayTo,
-    PAYMENTS_DEFAULT_PRICE: paymentsDefaultPrice,
-    WALLET_CONNECT_PROJECT_ID: walletConnectProjectId,
   };
 }
 
 function getStringAnswer(
-  answers: OnboardingAnswers,
+  answers: WizardAnswers,
   key: string,
-  fallback: string
+  fallback: string = ''
 ): string {
   const value = answers.get(key);
-  if (typeof value === "string" && value.trim().length > 0) {
+  if (typeof value === 'string' && value.trim().length > 0) {
     return sanitizeAnswerString(value);
   }
-  if (typeof value === "boolean") {
-    return value ? "true" : "false";
+  if (typeof value === 'boolean') {
+    return value ? 'true' : 'false';
   }
   return fallback;
 }
 
 function getBooleanAnswer(
-  answers: OnboardingAnswers,
+  answers: WizardAnswers,
   key: string,
   fallback: boolean
 ): boolean {
   const value = answers.get(key);
-  if (typeof value === "boolean") {
+  if (typeof value === 'boolean') {
     return value;
   }
-  if (typeof value === "string") {
+  if (typeof value === 'string') {
     const normalized = value.trim().toLowerCase();
-    if (["true", "yes", "y", "1"].includes(normalized)) return true;
-    if (["false", "no", "n", "0"].includes(normalized)) return false;
+    if (['true', 'yes', 'y', '1'].includes(normalized)) return true;
+    if (['false', 'no', 'n', '0'].includes(normalized)) return false;
   }
   return fallback;
 }
 
-function toEntrypointKey(value: string): string {
-  const normalized = value
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9._-]/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-+/, "")
-    .replace(/-+$/, "");
-
-  return normalized.length > 0
-    ? normalized
-    : DEFAULT_TEMPLATE_VALUES.ENTRYPOINT_KEY;
-}
+// toEntrypointKey removed - no longer needed without entrypoint customization
 
 async function assertTemplatePresent(templatePath: string) {
   const exists = existsSync(templatePath);
@@ -902,13 +816,13 @@ async function assertTargetDirectory(targetDir: string) {
   try {
     await fs.mkdir(targetDir, { recursive: true });
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== "EEXIST") {
+    if ((error as NodeJS.ErrnoException).code !== 'EEXIST') {
       throw error;
     }
   }
 
   const entries = await fs.readdir(targetDir);
-  const filtered = entries.filter((name) => name !== ".DS_Store");
+  const filtered = entries.filter(name => name !== '.DS_Store');
   if (filtered.length > 0) {
     throw new Error(
       `Target directory ${targetDir} already exists and is not empty.`
@@ -927,44 +841,29 @@ async function applyTemplateTransforms(
   targetDir: string,
   params: {
     packageName: string;
-    projectDirName: string;
     replacements: Record<string, string>;
   }
 ) {
   await updatePackageJson(targetDir, params.packageName);
 
-  const replacements = {
-    APP_NAME: params.projectDirName,
-    PACKAGE_NAME: params.packageName,
-    ...params.replacements,
-  };
-
-  await replaceTemplatePlaceholders(join(targetDir, "README.md"), replacements);
+  // Only replace tokens in README.md (agent.ts uses process.env)
   await replaceTemplatePlaceholders(
-    join(targetDir, "src/agent.ts"),
-    replacements
-  );
-  await replaceTemplatePlaceholders(
-    join(targetDir, ".env.example"),
-    replacements
-  );
-  await replaceTemplatePlaceholders(
-    join(targetDir, "src/lib/agent.ts"),
-    replacements
+    join(targetDir, 'README.md'),
+    params.replacements
   );
 
   await removeTemplateArtifacts(targetDir);
 }
 
 async function updatePackageJson(targetDir: string, packageName: string) {
-  const packageJsonPath = join(targetDir, "package.json");
-  const packageJsonRaw = await fs.readFile(packageJsonPath, "utf8");
+  const packageJsonPath = join(targetDir, 'package.json');
+  const packageJsonRaw = await fs.readFile(packageJsonPath, 'utf8');
   const packageJson = JSON.parse(packageJsonRaw) as Record<string, unknown>;
   packageJson.name = packageName;
   await fs.writeFile(
     packageJsonPath,
     `${JSON.stringify(packageJson, null, 2)}\n`,
-    "utf8"
+    'utf8'
   );
 }
 
@@ -973,7 +872,7 @@ async function replaceTemplatePlaceholders(
   replacements: Record<string, string>
 ) {
   try {
-    const raw = await fs.readFile(filePath, "utf8");
+    const raw = await fs.readFile(filePath, 'utf8');
     let replaced = raw;
     for (const [key, value] of Object.entries(replacements)) {
       replaced = replaced.replaceAll(`{{${key}}}`, value);
@@ -981,141 +880,68 @@ async function replaceTemplatePlaceholders(
     if (replaced === raw) {
       return;
     }
-    await fs.writeFile(filePath, replaced, "utf8");
+    await fs.writeFile(filePath, replaced, 'utf8');
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
       throw error;
     }
   }
 }
 
 async function removeTemplateArtifacts(targetDir: string) {
-  const metaPath = join(targetDir, "template.json");
+  const metaPath = join(targetDir, 'template.json');
   await fs.rm(metaPath, { force: true });
 }
 
 async function setupEnvironment(params: {
   targetDir: string;
-  envMode: CliOptions["envMode"];
-  prompt?: PromptApi;
-  logger: RunLogger;
+  skipWizard: boolean;
+  wizardAnswers: WizardAnswers;
+  agentName: string;
+  template: TemplateDescriptor;
 }) {
-  const { targetDir, envMode, prompt, logger } = params;
-  const examplePath = join(targetDir, ".env.example");
-  const envPath = join(targetDir, ".env");
+  const { targetDir, skipWizard, wizardAnswers, agentName, template } = params;
+  const envPath = join(targetDir, '.env');
 
-  const exampleExists = existsSync(examplePath);
-  if (!exampleExists) {
-    return;
+  const lines = [`AGENT_NAME=${agentName}`];
+
+  for (const prompt of template.wizard?.prompts || []) {
+    // Check wizard answers first (includes CLI args in non-interactive mode)
+    // Fall back to default value if not present
+    const answer = wizardAnswers.get(prompt.key);
+    const value = answer !== undefined ? answer : prompt.defaultValue;
+    // Convert to string, handling boolean false correctly
+    const stringValue = value == null ? '' : String(value);
+
+    lines.push(`${prompt.key}=${stringValue}`);
   }
 
-  if (envMode === "no") {
-    logger.log("Skipping env setup (requested).");
-    return;
-  }
-
-  if (envMode === "yes") {
-    await fs.copyFile(examplePath, envPath);
-    logger.log("Generated .env from .env.example.");
-    return;
-  }
-
-  if (!prompt) {
-    logger.log("Skipping env setup (non-interactive).");
-    return;
-  }
-
-  const shouldCreate = await prompt.confirm({
-    message: "Create a .env file now?",
-    defaultValue: true,
-  });
-
-  if (!shouldCreate) {
-    logger.log("Skipping env setup.");
-    return;
-  }
-
-  const templateContent = await fs.readFile(examplePath, "utf8");
-  const entries = parseEnvTemplate(templateContent);
-  const answers = new Map<string, string>();
-
-  for (const entry of entries) {
-    if (entry.type !== "entry") continue;
-    const response = await prompt.input({
-      message: `${entry.key}`,
-      defaultValue: entry.value ?? "",
-    });
-    answers.set(entry.key, response);
-  }
-
-  const rendered = renderEnvTemplate(entries, answers);
-  await fs.writeFile(envPath, rendered, "utf8");
-  logger.log("Created .env with your values.");
-}
-
-type EnvTemplateEntry =
-  | { type: "entry"; key: string; value?: string }
-  | { type: "comment"; raw: string }
-  | { type: "other"; raw: string };
-
-function parseEnvTemplate(content: string): EnvTemplateEntry[] {
-  const lines = content.split(/\r?\n/);
-  return lines.map((line) => {
-    const trimmed = line.trim();
-    if (trimmed.startsWith("#") || trimmed === "") {
-      return { type: "comment", raw: line } as EnvTemplateEntry;
-    }
-    const eqIndex = line.indexOf("=");
-    if (eqIndex === -1) {
-      return { type: "other", raw: line };
-    }
-
-    const key = line.slice(0, eqIndex).trim();
-    const value = line.slice(eqIndex + 1);
-    return { type: "entry", key, value };
-  });
-}
-
-function renderEnvTemplate(
-  entries: EnvTemplateEntry[],
-  answers: Map<string, string>
-) {
-  return (
-    entries
-      .map((entry) => {
-        if (entry.type === "entry") {
-          const answer = answers.get(entry.key) ?? entry.value ?? "";
-          return `${entry.key}=${answer}`;
-        }
-        return entry.raw;
-      })
-      .join("\n") + "\n"
-  );
+  await fs.writeFile(envPath, lines.join('\n') + '\n', 'utf8');
 }
 
 async function runInstall(cwd: string, logger: RunLogger) {
-  logger.log("Running `bun install`...");
+  logger.log('Running `bun install`...');
   try {
     await new Promise<void>((resolve, reject) => {
-      const child = spawn("bun", ["install"], {
+      const child = spawn('bun', ['install'], {
         cwd,
-        stdio: "inherit",
+        stdio: 'inherit',
       });
 
-      child.on("error", (error) => reject(error));
-      child.on("exit", (code) => {
+      child.on('error', error => reject(error));
+      child.on('exit', code => {
         if (code === 0) {
           resolve();
         } else {
           reject(
-            new Error(`bun install exited with code ${code ?? "unknown"}`)
+            new Error(`bun install exited with code ${code ?? 'unknown'}`)
           );
         }
       });
     });
   } catch (error) {
     logger.warn(
-      "⚠️  Failed to run `bun install`. Please install dependencies manually."
+      '⚠️  Failed to run `bun install`. Please install dependencies manually.'
     );
   }
 }
@@ -1134,7 +960,7 @@ function createInteractivePrompt(logger: RunLogger): PromptApi | undefined {
     async select({ message, choices }) {
       logger.log(message);
       choices.forEach((choice, index) => {
-        const detail = choice.description ? ` – ${choice.description}` : "";
+        const detail = choice.description ? ` – ${choice.description}` : '';
         logger.log(`  ${index + 1}. ${choice.title}${detail}`);
       });
       const range = `1-${choices.length}`;
@@ -1148,29 +974,29 @@ function createInteractivePrompt(logger: RunLogger): PromptApi | undefined {
         ) {
           return choices[parsed - 1]!.value;
         }
-        logger.log("Please enter a valid option number.");
+        logger.log('Please enter a valid option number.');
       }
     },
     async confirm({ message, defaultValue = true }) {
-      const suffix = defaultValue ? "Y/n" : "y/N";
+      const suffix = defaultValue ? 'Y/n' : 'y/N';
       while (true) {
         const answer = await rl.question(`${message} (${suffix}) `);
         const normalized = answer.trim().toLowerCase();
-        if (normalized === "" && defaultValue !== undefined) {
+        if (normalized === '' && defaultValue !== undefined) {
           return defaultValue;
         }
-        if (["y", "yes"].includes(normalized)) return true;
-        if (["n", "no"].includes(normalized)) return false;
-        logger.log("Please respond with y or n.");
+        if (['y', 'yes'].includes(normalized)) return true;
+        if (['n', 'no'].includes(normalized)) return false;
+        logger.log('Please respond with y or n.');
       }
     },
-    async input({ message, defaultValue = "" }) {
+    async input({ message, defaultValue = '' }) {
       const promptMessage =
         defaultValue && defaultValue.length > 0
           ? `${message} (${defaultValue}): `
           : `${message}: `;
       const answer = await rl.question(promptMessage);
-      return answer === "" ? defaultValue : answer;
+      return answer === '' ? defaultValue : answer;
     },
     async close() {
       await rl.close();

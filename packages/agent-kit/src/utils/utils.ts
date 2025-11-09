@@ -1,9 +1,10 @@
-import { z } from "zod";
-import type { PaymentsConfig } from "../types";
+import { z } from 'zod';
+
 import {
   getActiveInstanceConfig,
   getAgentKitConfig,
-} from "../config";
+} from '../config';
+import type { PaymentsConfig } from '../types';
 
 export function toJsonSchemaOrUndefined(s?: z.ZodTypeAny) {
   if (!s) return undefined;

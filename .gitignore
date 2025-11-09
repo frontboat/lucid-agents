@@ -1,6 +1,4 @@
 node_modules
-.env
-
 */node_modules
 */bun.lockb
 
@@ -8,3 +6,11 @@ old/
 old/*
 
 .env.gcloud
+.env
+.env.local
+
+
+# Build outputs
+dist/
+*/dist/
+*.tsbuildinfo

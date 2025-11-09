@@ -1,6 +1,6 @@
-# @lucid-dreams/agent-kit
+# @lucid-agents/agent-kit
 
-`@lucid-dreams/agent-kit` is a lightweight wrapper around [Hono](https://hono.dev) that turns a plain HTTP server into an agent surface with fully typed entrypoints, discovery endpoints, monetization hooks, and trust metadata. Use it to describe agent capabilities once and let adapters across the monorepo serve them consistently.
+`@lucid-agents/agent-kit` is a lightweight wrapper around [Hono](https://hono.dev) that turns a plain HTTP server into an agent surface with fully typed entrypoints, discovery endpoints, monetization hooks, and trust metadata. Use it to describe agent capabilities once and let adapters across the monorepo serve them consistently.
 
 ## Highlights
 
@@ -17,15 +17,15 @@
 This package is part of the monorepo. From sibling workspaces import:
 
 ```ts
-import { createAgentApp, paymentsFromEnv } from "@lucid-dreams/agent-kit";
-import type { EntrypointDef, AgentMeta } from "@lucid-dreams/agent-kit/types";
+import { createAgentApp, paymentsFromEnv } from '@lucid-agents/agent-kit';
+import type { EntrypointDef, AgentMeta } from '@lucid-agents/agent-kit/types';
 ```
 
 Subpath exports:
 
-- `@lucid-dreams/agent-kit` — main API surface (apps, payments, trust helpers, utilities).
-- `@lucid-dreams/agent-kit/types` — public TypeScript interfaces and helper types.
-- `@lucid-dreams/agent-kit/utils` — focused helpers (`toJsonSchemaOrUndefined`, `paymentsFromEnv`, address utilities, etc.).
+- `@lucid-agents/agent-kit` — main API surface (apps, payments, trust helpers, utilities).
+- `@lucid-agents/agent-kit/types` — public TypeScript interfaces and helper types.
+- `@lucid-agents/agent-kit/utils` — focused helpers (`toJsonSchemaOrUndefined`, `paymentsFromEnv`, address utilities, etc.).
 
 ## Core Concepts
 
@@ -49,23 +49,23 @@ The return value exposes:
 - `payments` — the active `PaymentsConfig` (if paywalling is enabled) or `undefined`.
 
 ```ts
-import { z } from "zod";
-import { createAgentApp } from "@lucid-dreams/agent-kit";
+import { z } from 'zod';
+import { createAgentApp } from '@lucid-agents/agent-kit';
 
 const { app, addEntrypoint } = createAgentApp({
-  name: "hello-agent",
-  version: "0.1.0",
-  description: "Echoes whatever you pass in",
+  name: 'hello-agent',
+  version: '0.1.0',
+  description: 'Echoes whatever you pass in',
 });
 
 addEntrypoint({
-  key: "echo",
-  description: "Echo a message",
+  key: 'echo',
+  description: 'Echo a message',
   input: z.object({ text: z.string() }),
   async handler({ input }) {
     return {
-      output: { text: String(input.text ?? "") },
-      usage: { total_tokens: String(input.text ?? "").length },
+      output: { text: String(input.text ?? '') },
+      usage: { total_tokens: String(input.text ?? '').length },
     };
   },
 });
@@ -89,14 +89,14 @@ Field highlights:
 
 ```ts
 addEntrypoint({
-  key: "stream",
-  description: "Streams characters back to the caller",
+  key: 'stream',
+  description: 'Streams characters back to the caller',
   input: z.object({ prompt: z.string() }),
   streaming: true,
-  price: { stream: "2500" },
+  price: { stream: '2500' },
   async stream({ input }, emit) {
-    for (const ch of input.prompt ?? "") {
-      await emit({ kind: "delta", delta: ch, mime: "text/plain" });
+    for (const ch of input.prompt ?? '') {
+      await emit({ kind: 'delta', delta: ch, mime: 'text/plain' });
     }
     return { output: { done: true } };
   },
@@ -118,7 +118,7 @@ Every agent app exposes the following for free:
 `agent-kit` keeps configuration centralized so every helper resolves the same values.
 
 - Defaults live in `src/config.ts` (facilitator, pay-to address, network, wallet API).
-- Environment variables override defaults automatically: `FACILITATOR_URL`, `ADDRESS`, `NETWORK`, `DEFAULT_PRICE`, `LUCID_API_URL`/`VITE_API_URL`, `AGENT_WALLET_MAX_PAYMENT_BASE_UNITS`, and `AGENT_WALLET_MAX_PAYMENT_USDC`.
+- Environment variables override defaults automatically: `FACILITATOR_URL`, `PAYMENTS_RECEIVABLE_ADDRESS`, `NETWORK`, `DEFAULT_PRICE`, `LUCID_API_URL`/`VITE_API_URL`, `AGENT_WALLET_MAX_PAYMENT_BASE_UNITS`, and `AGENT_WALLET_MAX_PAYMENT_USDC`.
 - `configureAgentKit(overrides)` merges values at runtime; use it inside tests or before calling `createAgentApp`.
 - `getAgentKitConfig()` returns the resolved values; `resetAgentKitConfigForTesting()` clears overrides.
 
@@ -129,17 +129,17 @@ import {
   configureAgentKit,
   getAgentKitConfig,
   paymentsFromEnv,
-} from "@lucid-dreams/agent-kit";
+} from '@lucid-agents/agent-kit';
 
 configureAgentKit({
-  payments: { defaultPrice: "750" },
-  wallet: { walletApiUrl: "https://wallets.example" },
+  payments: { defaultPrice: '750' },
+  wallet: { walletApiUrl: 'https://wallets.example' },
 });
 
 const config = getAgentKitConfig();
 console.log(config.payments.facilitatorUrl); // resolved facilitator
 console.log(config.wallet.walletApiUrl); // resolved wallet API base URL
-console.log(paymentsFromEnv({ defaultPrice: "1000" })); // reuse inside handlers
+console.log(paymentsFromEnv({ defaultPrice: '1000' })); // reuse inside handlers
 ```
 
 ## Payments & Monetization
@@ -153,11 +153,11 @@ When a `PaymentsConfig` is active, `createAgentApp` automatically wraps invoke/s
 `resolveEntrypointPrice(entrypoint, payments, kind)` encapsulates the merge logic.
 
 For authenticated wallet access, pair your agent with
-`@lucid-dreams/agent-auth` and reuse the generated SDK surface:
+`@lucid-agents/agent-auth` and reuse the generated SDK surface:
 
 ```ts
-import { AgentRuntime } from "@lucid-dreams/agent-auth";
-import { createRuntimePaymentContext } from "@lucid-dreams/agent-kit";
+import { AgentRuntime } from '@lucid-agents/agent-auth';
+import { createRuntimePaymentContext } from '@lucid-agents/agent-kit';
 
 const { runtime } = await AgentRuntime.load({
   wallet: {
@@ -173,26 +173,26 @@ const { runtime } = await AgentRuntime.load({
       baseUrl: process.env.LUCID_API_URL,
       agentRef: process.env.AGENT_REF,
       credentialId: process.env.CREDENTIAL_ID,
-      scopes: ["agents.read"],
+      scopes: ['agents.read'],
     },
   },
 });
 
 const token = await runtime.ensureAccessToken();
 const agents = await runtime.api.listAgents();
-console.log("active bearer token", token.slice(0, 12), agents.items.length);
+console.log('active bearer token', token.slice(0, 12), agents.items.length);
 
 // Wrap fetch with x402 payments using the runtime-managed wallet
 const { fetchWithPayment } = await createRuntimePaymentContext({
   runtime,
 });
 
-const paidResponse = await fetchWithPayment?.("https://paid.endpoint/api", {
-  method: "POST",
-  body: JSON.stringify({ prompt: "charge me" }),
-  headers: { "content-type": "application/json" },
+const paidResponse = await fetchWithPayment?.('https://paid.endpoint/api', {
+  method: 'POST',
+  body: JSON.stringify({ prompt: 'charge me' }),
+  headers: { 'content-type': 'application/json' },
 });
-console.log("paid response", await paidResponse?.json());
+console.log('paid response', await paidResponse?.json());
 ```
 
 ## Manifest, AP2, and Discovery
@@ -209,25 +209,25 @@ You rarely need to call `buildManifest` directly; `createAgentApp` handles it au
 
 ## Trust & Identity (ERC-8004)
 
-Trust metadata is modelled by `TrustConfig`. For ERC-8004 identity management, use the dedicated `@lucid-dreams/agent-kit-identity` package:
+Trust metadata is modelled by `TrustConfig`. For ERC-8004 identity management, use the dedicated `@lucid-agents/agent-kit-identity` package:
 
 ```ts
 import {
   createAgentIdentity,
   getTrustConfig,
-} from "@lucid-dreams/agent-kit-identity";
+} from '@lucid-agents/agent-kit-identity';
 
 // Register agent identity with auto-registration
 const identity = await createAgentIdentity({
-  domain: "agent.example.com",
+  domain: 'agent.example.com',
   autoRegister: true,
   chainId: 84532,
-  trustModels: ["feedback", "inference-validation"],
+  trustModels: ['feedback', 'inference-validation'],
 });
 
 // Use in your agent app
 const { app } = createAgentApp(
-  { name: "my-agent", version: "1.0.0" },
+  { name: 'my-agent', version: '1.0.0' },
   { trust: getTrustConfig(identity) }
 );
 
@@ -241,7 +241,7 @@ The package also exports lower-level helpers for advanced use cases:
 - `signAgentDomainProof({ domain, address, chainId, signer })` — manually sign domain ownership proofs.
 - `buildTrustConfigFromIdentity(record, { signature, chainId, namespace, trustOverrides })` — convert registry records into `TrustConfig`.
 
-See [`@lucid-dreams/agent-kit-identity` documentation](../agent-kit-identity/README.md) for complete examples and API reference.
+See [`@lucid-agents/agent-kit-identity` documentation](../agent-kit-identity/README.md) for complete examples and API reference.
 
 ## x402 + AxFlow utilities
 

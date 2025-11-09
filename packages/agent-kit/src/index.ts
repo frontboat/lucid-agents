@@ -1,53 +1,48 @@
-export * from "./ap2";
-export * from "./erc8004";
-export * from "./types";
-
-export * from "./utils";
+export * from './ap2';
+export { createAgentApp, type CreateAgentAppOptions } from './app';
 export {
-  createAxLLMClient,
-  type AxLLMClient,
-  type AxLLMClientOptions,
-} from "./utils/axllm";
-
-export {
+  type AgentKitConfig,
   configureAgentKit,
   getAgentKitConfig,
   resetAgentKitConfigForTesting,
   setActiveInstanceConfig,
   getActiveInstanceConfig,
-  type AgentKitConfig,
   type ResolvedAgentKitConfig,
-} from "./config";
-
-export { resolveEntrypointPrice } from "./pricing";
-
-export { buildManifest } from "./manifest";
-
+} from './config';
+export * from './erc8004';
+export { buildManifest } from './manifest';
 export {
   createAgentHttpRuntime,
   type AgentHttpRuntime,
   type AgentHttpHandlers,
   type CreateAgentHttpOptions,
   type RuntimePaymentRequirement,
-} from "./http/runtime";
-
+} from './http/runtime';
 export {
   createSSEStream,
   writeSSE,
   type SSEWriteOptions,
   type SSEStreamRunner,
   type SSEStreamRunnerContext,
-} from "./http/sse";
-
+} from './http/sse';
 export {
   resolvePaymentRequirement,
   paymentRequiredResponse,
   type PaymentRequirement,
-} from "./http/payments";
-
+} from './http/payments';
+export { withPayments, type WithPaymentsParams } from './paywall';
+export { resolveEntrypointPrice } from './pricing';
+export { validatePaymentsConfig } from './validation';
 export {
   createRuntimePaymentContext,
   type RuntimePaymentContext,
-  type RuntimePaymentOptions,
   type RuntimePaymentLogger,
-} from "./runtime";
+  type RuntimePaymentOptions,
+} from './runtime';
+export * from './types';
+export * from './utils';
+export {
+  type AxLLMClient,
+  type AxLLMClientOptions,
+  createAxLLMClient,
+} from './utils/axllm';

@@ -1,4 +1,104 @@
-# @lucid-dreams/agent-kit
+# @lucid-agents/agent-kit
+
+## 1.2.1
+
+### Patch Changes
+
+- 069795f: AI agent optimization and documentation enhancement
+
+  ### Non-Interactive CLI Arguments
+
+  Added support for passing template arguments via CLI flags in non-interactive mode. AI coding agents can now fully automate project scaffolding:
+
+  ```bash
+  bunx @lucid-agents/create-agent-kit my-agent \
+    --template=identity \
+    --non-interactive \
+    --AGENT_DESCRIPTION="My agent" \
+    --PAYMENTS_RECEIVABLE_ADDRESS="0x..."
+  ```
+
+  ### AGENTS.md Documentation
+
+  Added comprehensive AGENTS.md files following the agents.md industry standard (20,000+ projects):
+  - Template-specific guides for blank, axllm, axllm-flow, and identity templates
+  - Root-level monorepo guide with architecture overview and API reference
+  - Example-driven with copy-paste-ready code samples
+  - Covers entrypoint patterns, testing, troubleshooting, and common use cases
+
+  ### Template Schema JSON
+
+  Added machine-readable JSON Schema files (`template.schema.json`) for each template documenting all configuration arguments, types, and defaults.
+
+  ### Improvements
+  - Fixed boolean handling in environment setup (boolean false now correctly outputs "false" not empty string)
+  - Converted IDENTITY_AUTO_REGISTER to confirm-type prompt for better UX
+  - Added 11 new comprehensive test cases (21 total, all passing)
+  - Updated CLI help text and README with non-interactive examples
+
+  ### Bug Fixes
+  - Fixed release bot workflow to use proper dependency sanitization script
+  - Ensures published npm packages have resolved workspace and catalog dependencies
+
+- Updated dependencies [069795f]
+  - @lucid-agents/agent-kit-identity@1.2.1
+
+## 1.2.0
+
+### Minor Changes
+
+- e5b652c: Complete template system refactor with improved validation and safety
+  - **Renamed environment variables** for clarity: `ADDRESS` → `PAYMENTS_RECEIVABLE_ADDRESS`, `APP_NAME` → `AGENT_NAME`, `AUTO_REGISTER` → `IDENTITY_AUTO_REGISTER`
+  - **Removed default payment address** (issue #2) - prevents accidental fund loss by requiring explicit wallet address configuration
+  - **Added validation** for agent metadata (name, version, description) and payment configuration with clear error messages (issue #8)
+  - **Centralized validation** in new `validation.ts` module for reusable, consistent validation logic
+  - **Simplified .env generation** - pure `KEY=VALUE` format, all prompts written to .env regardless of value
+  - **Standardized wizard terminology** - all templates use "wizard" consistently, removed "onboarding"
+  - **Unified wizard prompts** - all templates share identical core prompts for consistency
+  - **Added `--wizard=no` flag** for non-interactive usage in CI/CD environments
+  - **Removed code generation** from templates - pure runtime configuration via `process.env`
+  - **Removed `DEFAULT_TEMPLATE_VALUES`** duplication - `template.json` is single source of truth
+  - **Simplified codebase** - removed ~100 lines of complex .env parsing logic
+
+  Breaking changes: Existing projects must update environment variable names in their `.env` files.
+
+### Patch Changes
+
+- @lucid-agents/agent-kit-identity@1.2.0
+
+## 1.1.2
+
+### Patch Changes
+
+- fixed 8004 agent metadata generation
+- Updated dependencies
+  - @lucid-agents/agent-kit-identity@1.1.2
+
+## 1.1.1
+
+### Patch Changes
+
+- patch
+- Updated dependencies
+  - @lucid-agents/agent-kit-identity@1.1.1
+
+## 1.1.0
+
+### Minor Changes
+
+- bumps
+
+### Patch Changes
+
+- Updated dependencies
+  - @lucid-agents/agent-kit-identity@1.1.0
+
+## 1.0.0
+
+### Patch Changes
+
+- Updated dependencies
+  - @lucid-agents/agent-kit-identity@1.0.0
 
 ## 0.2.25
 
@@ -12,8 +112,8 @@
 
 - fix bug in GET route
 - Updated dependencies
-  - @lucid-dreams/agent-kit-identity@0.2.24
-  - @lucid-dreams/agent-auth@0.2.24
+  - @lucid-agents/agent-kit-identity@0.2.24
+  - @lucid-agents/agent-auth@0.2.24
   - @lucid-dreams/client@0.2.24
 
 ## 0.2.23
@@ -22,8 +122,8 @@
 
 - agent kit fix and invoke page allowing wallet payments
 - Updated dependencies
-  - @lucid-dreams/agent-auth@0.2.23
-  - @lucid-dreams/agent-kit-identity@0.2.23
+  - @lucid-agents/agent-auth@0.2.23
+  - @lucid-agents/agent-kit-identity@0.2.23
   - @lucid-dreams/client@0.2.23
 
 ## 0.2.22
@@ -32,8 +132,8 @@
 
 - fix favicon
 - Updated dependencies
-  - @lucid-dreams/agent-kit-identity@0.2.22
-  - @lucid-dreams/agent-auth@0.2.22
+  - @lucid-agents/agent-kit-identity@0.2.22
+  - @lucid-agents/agent-auth@0.2.22
   - @lucid-dreams/client@0.2.22
 
 ## 0.2.21
@@ -42,8 +142,8 @@
 
 - fix hot
 - Updated dependencies
-  - @lucid-dreams/agent-auth@0.2.21
-  - @lucid-dreams/agent-kit-identity@0.2.21
+  - @lucid-agents/agent-auth@0.2.21
+  - @lucid-agents/agent-kit-identity@0.2.21
   - @lucid-dreams/client@0.2.21
 
 ## 0.2.20
@@ -54,8 +154,8 @@
 - fixed kit issue with pricing
 - Updated dependencies [7e25582]
 - Updated dependencies
-  - @lucid-dreams/agent-kit-identity@0.2.20
-  - @lucid-dreams/agent-auth@0.2.20
+  - @lucid-agents/agent-kit-identity@0.2.20
+  - @lucid-agents/agent-auth@0.2.20
   - @lucid-dreams/client@0.2.20
 
 ## 0.2.19
@@ -64,8 +164,8 @@
 
 - c023ca0: hey
 - Updated dependencies [c023ca0]
-  - @lucid-dreams/agent-kit-identity@0.2.19
-  - @lucid-dreams/agent-auth@0.2.19
+  - @lucid-agents/agent-kit-identity@0.2.19
+  - @lucid-agents/agent-auth@0.2.19
   - @lucid-dreams/client@0.2.19
 
 ## 0.2.18
@@ -74,8 +174,8 @@
 
 - f470d6a: bump
 - Updated dependencies [f470d6a]
-  - @lucid-dreams/agent-kit-identity@0.2.18
-  - @lucid-dreams/agent-auth@0.2.18
+  - @lucid-agents/agent-kit-identity@0.2.18
+  - @lucid-agents/agent-auth@0.2.18
   - @lucid-dreams/client@0.2.18
 
 ## 0.2.17
@@ -84,8 +184,8 @@
 
 - bump
 - Updated dependencies
-  - @lucid-dreams/agent-kit-identity@0.2.17
-  - @lucid-dreams/agent-auth@0.2.17
+  - @lucid-agents/agent-kit-identity@0.2.17
+  - @lucid-agents/agent-auth@0.2.17
   - @lucid-dreams/client@0.2.17
 
 ## 0.2.16
@@ -94,8 +194,8 @@
 
 - up
 - Updated dependencies
-  - @lucid-dreams/agent-kit-identity@0.2.16
-  - @lucid-dreams/agent-auth@0.2.16
+  - @lucid-agents/agent-kit-identity@0.2.16
+  - @lucid-agents/agent-auth@0.2.16
   - @lucid-dreams/client@0.2.16
 
 ## 0.2.15
@@ -104,8 +204,8 @@
 
 - be4c11a: bump
 - Updated dependencies [be4c11a]
-  - @lucid-dreams/agent-kit-identity@0.2.15
-  - @lucid-dreams/agent-auth@0.2.15
+  - @lucid-agents/agent-kit-identity@0.2.15
+  - @lucid-agents/agent-auth@0.2.15
   - @lucid-dreams/client@0.2.15
 
 ## 0.2.14
@@ -116,8 +216,8 @@
 - bump
 - Updated dependencies
 - Updated dependencies
-  - @lucid-dreams/agent-auth@0.2.14
-  - @lucid-dreams/agent-kit-identity@0.2.14
+  - @lucid-agents/agent-auth@0.2.14
+  - @lucid-agents/agent-kit-identity@0.2.14
   - @lucid-dreams/client@0.2.14
 
 ## 0.2.13

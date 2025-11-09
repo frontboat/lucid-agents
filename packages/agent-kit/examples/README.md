@@ -35,7 +35,7 @@ This script contains a minimal, end-to-end showcase of everything
 - Enabling x402 monetisation and surfacing the AP2 capability extension.
 - Registering on the ERC-8004 Identity Registry, signing domain ownership proofs, and wiring the resulting trust metadata into the manifest.
 - Fetching the generated AgentCard to verify that trust, payments, and schema metadata are emitted correctly.
-- Ready to pair with `@lucid-dreams/agent-auth` when you need authenticated wallet flows.
+- Ready to pair with `@lucid-agents/agent-auth` when you need authenticated wallet flows.
 
 > The example is intentionally self-contained and uses viem-style clients. Install the peer tooling you need (e.g. `viem`) before running it locally.
 
@@ -48,9 +48,9 @@ bun run examples/full-agent.ts
 Environment variables consumed by the example:
 
 ```
-FACILITATOR_URL   # x402 facilitator endpoint (defaults to https://facilitator.daydreams.systems)
-ADDRESS           # Payee wallet address (EVM or Solana)
-NETWORK           # x402 network name (e.g. base-sepolia)
+FACILITATOR_URL              # x402 facilitator endpoint (defaults to https://facilitator.daydreams.systems)
+PAYMENTS_RECEIVABLE_ADDRESS  # Receivable address that receives payments (EVM or Solana)
+NETWORK                      # x402 network name (e.g. base-sepolia)
 IDENTITY_REGISTRY_ADDRESS   # ERC-8004 registry contract (defaults to 0x7177a6867296406881E20d6647232314736Dd09A)
 CHAIN_ID          # Numeric chain id (e.g. 84532 for Base Sepolia)
 RPC_URL           # HTTPS RPC endpoint for the chosen chain
