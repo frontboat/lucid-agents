@@ -115,6 +115,70 @@ const { agent } = runtime;
 export { agent, handlers, runtime };
 ```
 
+## Supported Networks
+
+Lucid-agents supports payment receiving on multiple blockchain networks:
+
+### EVM Networks
+
+- `base` - Base mainnet (L2)
+- `base-sepolia` - Base Sepolia testnet
+- `ethereum` - Ethereum mainnet
+- `sepolia` - Ethereum Sepolia testnet
+
+### Solana Networks
+
+- `solana-mainnet` - Solana mainnet
+- `solana-devnet` - Solana devnet
+- `solana-testnet` - Solana testnet
+
+### Address Formats
+
+- **EVM**: 0x-prefixed hex (42 characters) - e.g., `0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb0`
+- **Solana**: Base58 encoding (~44 characters, no prefix) - e.g., `9yPGxVrYi7C5JLMGjEZhK8qQ4tn7SzMWwQHvz3vGJCKz`
+
+### Example with Solana
+
+```ts
+const { app, addEntrypoint } = createAgentApp(
+  {
+    name: 'solana-agent',
+    version: '1.0.0',
+    description: 'Agent accepting Solana USDC payments',
+  },
+  {
+    config: {
+      payments: {
+        payTo: '9yPGxVrYi7C5JLMGjEZhK8qQ4tn7SzMWwQHvz3vGJCKz', // Solana address
+        network: 'solana-devnet',
+        facilitatorUrl: 'https://facilitator.daydreams.systems',
+        defaultPrice: '10000', // 0.01 USDC (6 decimals)
+      },
+    },
+    useConfigPayments: true,
+  }
+);
+
+addEntrypoint({
+  key: 'translate',
+  description: 'Translate text',
+  input: z.object({ text: z.string(), target: z.string() }),
+  async handler({ input }) {
+    // Your translation logic
+    return {
+      output: { translated: `Translated: ${input.text}` },
+    };
+  },
+});
+```
+
+### SPL Token Addresses
+
+For Solana payments, USDC addresses are:
+
+- **Mainnet USDC**: `EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v`
+- **Devnet USDC**: `Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr`
+
 ### Entrypoints
 
 `EntrypointDef` describes a unit of work. Each entrypoint becomes two HTTP endpoints:

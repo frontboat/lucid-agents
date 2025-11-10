@@ -77,7 +77,7 @@ All configuration goes into `.env` - easy to change later without editing code.
 
 ### Adapter System
 
-Framework-specific assets live under `packages/create-agent-kit/adapters/<adapter>`.  
+Framework-specific assets live under `packages/create-agent-kit/adapters/<adapter>`.
 When you select an adapter, the CLI copies the corresponding runtime framework files:
 
 **Available Adapters:**
@@ -100,6 +100,7 @@ Options:
   --no-install          Skip bun install (default)
   --wizard=no           Skip wizard, use template defaults
   --non-interactive     Same as --wizard=no
+  --network=<network>   Set payment network (base-sepolia, base, solana-devnet, solana-mainnet)
   --KEY=value           Pass template argument (use with --non-interactive)
   -h, --help            Show this help
 ```
@@ -112,6 +113,15 @@ bunx @lucid-agents/create-agent-kit@latest my-agent
 
 # With specific template
 bunx @lucid-agents/create-agent-kit@latest my-agent --template=identity
+
+# With Solana payment network
+bunx @lucid-agents/create-agent-kit@latest my-agent --network=solana-devnet
+
+# With Base mainnet
+bunx @lucid-agents/create-agent-kit@latest my-agent --network=base
+
+# Identity template with Solana payments
+bunx @lucid-agents/create-agent-kit@latest my-agent --template=identity --network=solana-mainnet
 
 # With Hono adapter
 bunx @lucid-agents/create-agent-kit@latest my-agent --adapter=hono --template=blank
@@ -128,6 +138,40 @@ bunx @lucid-agents/create-agent-kit@latest my-agent --install
 # Non-interactive with defaults
 bunx @lucid-agents/create-agent-kit@latest my-agent --template=blank --wizard=no
 ```
+
+### Network Selection
+
+All templates support both EVM and Solana payment networks:
+
+**Interactive Mode:**
+When you run the CLI interactively, you'll see a dropdown menu to select your payment network:
+
+```
+? Payment network
+  ❯ Base Sepolia (EVM testnet)
+    Base (EVM mainnet)
+    Solana Devnet
+    Solana Mainnet
+```
+
+**Non-Interactive Mode:**
+Use the `--network` flag to specify the network:
+
+```bash
+# Solana devnet
+bunx @lucid-agents/create-agent-kit my-agent --network=solana-devnet --non-interactive
+
+# Base mainnet
+bunx @lucid-agents/create-agent-kit my-agent --network=base --non-interactive
+```
+
+**Important Notes:**
+
+- Payment network is independent of identity registration (identity uses EVM chain)
+- For identity template: EVM private key is for identity registration, payment address can be Solana
+- Payment address can be shared across multiple agents
+
+````
 
 ### Non-Interactive Mode with Template Arguments
 
@@ -164,7 +208,7 @@ bunx @lucid-agents/create-agent-kit@latest ai-agent \
   --non-interactive \
   --AGENT_DESCRIPTION="AI-powered agent" \
   --PAYMENTS_RECEIVABLE_ADDRESS="0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb0"
-```
+````
 
 **How it works:**
 

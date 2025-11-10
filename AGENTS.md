@@ -65,7 +65,33 @@ Response (JSON or SSE stream)
 3. **Zod for validation** - Schema-first approach for input/output
 4. **Server-Sent Events for streaming** - Standard SSE for real-time responses
 5. **ERC-8004 for identity** - On-chain agent identity and reputation
-6. **x402 for payments** - HTTP-native payment protocol
+6. **x402 for payments** - HTTP-native payment protocol supporting both EVM and Solana networks
+
+### Supported Payment Networks
+
+The framework supports payment receiving on multiple blockchain networks:
+
+**EVM Networks:**
+- `base` - Base mainnet (L2, low cost)
+- `base-sepolia` - Base Sepolia testnet
+- `ethereum` - Ethereum mainnet
+- `sepolia` - Ethereum Sepolia testnet
+
+**Solana Networks:**
+- `solana-mainnet` - Solana mainnet (high throughput, low fees)
+- `solana-devnet` - Solana devnet  
+- `solana-testnet` - Solana testnet
+
+**Key Differences:**
+- **EVM**: EIP-712 signatures, ERC-20 tokens (USDC), 0x-prefixed addresses
+- **Solana**: Ed25519 signatures, SPL tokens (USDC), Base58 addresses
+- **Transaction finality**: Solana (~400ms) vs EVM (12s-12min)
+- **Gas costs**: Solana (~$0.0001) vs EVM ($0.01-$10)
+
+**Identity vs Payments:**
+- Identity registration (ERC-8004): EVM-only (smart contract on Ethereum chains)
+- Payment receiving: Any supported network (EVM or Solana)
+- These are independent: register identity on Base, receive payments on Solana
 
 ## Monorepo Structure
 

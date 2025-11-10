@@ -302,6 +302,10 @@ function parseArgs(args: string[]): ParsedArgs {
       options.adapterId = arg.slice('--adapter='.length).toLowerCase();
     } else if (arg?.startsWith('--framework=')) {
       options.adapterId = arg.slice('--framework='.length).toLowerCase();
+    } else if (arg?.startsWith('--network=')) {
+      // Special handling for --network flag (maps to PAYMENTS_NETWORK)
+      const value = arg.slice('--network='.length);
+      options.templateArgs?.set('PAYMENTS_NETWORK', value);
     } else if (arg?.startsWith('--') && arg.includes('=')) {
       // Capture template arguments like --SOME_KEY=value
       const equalIndex = arg.indexOf('=');
@@ -333,12 +337,18 @@ function printHelp(logger: RunLogger) {
   logger.log('  --wizard=no           Skip wizard, use template defaults');
   logger.log('  --non-interactive     Same as --wizard=no');
   logger.log(
+    '  --network=<network>   Set payment network (base-sepolia, base, solana-devnet, solana-mainnet)'
+  );
+  logger.log(
     '  --KEY=value           Pass template argument (use with --non-interactive)'
   );
   logger.log('  -h, --help            Show this help');
   logger.log('');
   logger.log('Examples:');
   logger.log('  bunx @lucid-agents/create-agent-kit my-agent');
+  logger.log(
+    '  bunx @lucid-agents/create-agent-kit my-agent --network=solana-devnet'
+  );
   logger.log(
     '  bunx @lucid-agents/create-agent-kit my-agent --template=identity --install'
   );

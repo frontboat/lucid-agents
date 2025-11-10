@@ -37,14 +37,20 @@
       },
       {
         "key": "PAYMENTS_NETWORK",
-        "type": "input",
-        "message": "Payment network identifier",
+        "type": "select",
+        "message": "Payment network",
+        "choices": [
+          { "value": "base-sepolia", "title": "Base Sepolia (EVM testnet)" },
+          { "value": "base", "title": "Base (EVM mainnet)" },
+          { "value": "solana-devnet", "title": "Solana Devnet" },
+          { "value": "solana-mainnet", "title": "Solana Mainnet" }
+        ],
         "defaultValue": "base-sepolia"
       },
       {
         "key": "PAYMENTS_RECEIVABLE_ADDRESS",
         "type": "input",
-        "message": "Receivable address (address that receives payments)",
+        "message": "Payment address (0x... for EVM, Base58 for Solana)",
         "defaultValue": ""
       },
       {
