@@ -41,7 +41,6 @@ This release introduces a comprehensive refactor of the lucid-agents framework t
 
 - **Template System**: Templates now use `.template` file extensions to avoid TypeScript compilation errors during development
 - **Adapter Architecture**: Agent creation now requires selecting an adapter (Hono or TanStack Start)
-- **CLI Changes**: `create-agent-kit` now supports `--adapter` and `--adapter-ui` flags for choosing runtime frameworks
 - **Payment Config API**: Payment defaults are now `undefined` instead of having fallback values (explicit configuration required)
 - **Return Value**: Removed redundant `payments` property from `createAgentApp` return (use `config.payments` instead)
 
@@ -68,16 +67,17 @@ This release introduces a comprehensive refactor of the lucid-agents framework t
 - Better type safety in route handlers (e.g., params.key validation)
 
 ### CLI Improvements
-- `--adapter` flag to select runtime framework
-- `--adapter-ui` flag to choose UI mode (ui/headless) for TanStack
+- `--adapter` flag to select runtime framework (hono, tanstack-ui, tanstack-headless)
 - Better error messages for adapter compatibility
+- Clear error suggestions when invalid adapter specified
 
 ## Package Changes
 
 ### @lucid-agents/create-agent-kit
-- Refactored to support adapter selection
+- Adapter selection system with support for multiple runtime frameworks
 - Template processing with `.template` file handling
 - Adapter-specific file layering system
+- TanStack adapter available in two variants: `tanstack-ui` (full dashboard) and `tanstack-headless` (API only)
 - Non-interactive mode improvements
 
 ### @lucid-agents/agent-kit
@@ -121,10 +121,10 @@ New projects should specify adapter during creation:
 # Hono adapter
 bunx @lucid-agents/create-agent-kit my-agent --adapter=hono
 
-# TanStack with UI
-bunx @lucid-agents/create-agent-kit my-agent --adapter=tanstack --adapter-ui=ui
+# TanStack with UI (full dashboard)
+bunx @lucid-agents/create-agent-kit my-agent --adapter=tanstack-ui
 
-# TanStack headless
-bunx @lucid-agents/create-agent-kit my-agent --adapter=tanstack --adapter-ui=headless
+# TanStack headless (API only)
+bunx @lucid-agents/create-agent-kit my-agent --adapter=tanstack-headless
 ```
 
