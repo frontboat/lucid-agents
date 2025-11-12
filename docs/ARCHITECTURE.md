@@ -90,6 +90,8 @@ graph LR
     style cli fill:#e57373
 ```
 
+Note: Dependencies shown are runtime imports only. No type imports exist between extensions and core. Structural typing provides type compatibility (see Structural Typing Pattern section above).
+
 ## Layer 1: Extensions
 
 Extensions add optional capabilities. They are independent and don't depend on each other.
@@ -261,11 +263,12 @@ Packages must build in dependency order:
 ```mermaid
 graph LR
     A[1. x402-tanstack-start] --> B[2. agent-kit-identity]
-    B --> C[3. agent-kit-payments]
-    C --> D[4. agent-kit]
-    D --> E[5. agent-kit-hono]
-    D --> F[6. agent-kit-tanstack]
-    E --> G[7. create-agent-kit]
+    A --> C[2. agent-kit-payments]
+    B --> D[3. agent-kit]
+    C --> D
+    D --> E[4. agent-kit-hono]
+    D --> F[4. agent-kit-tanstack]
+    E --> G[5. create-agent-kit]
     F --> G
 
     style A fill:#b39ddb
@@ -276,6 +279,8 @@ graph LR
     style F fill:#ce93d8
     style G fill:#ef9a9a
 ```
+
+Note: agent-kit-payments is now a leaf package that can build before agent-kit, eliminating the previous circular dependency.
 
 ## Package Responsibilities
 
@@ -310,6 +315,64 @@ graph TB
 ```
 
 Extensions are independent modules that core can optionally use. Neither depends on the other.
+
+## Structural Typing Pattern
+
+To avoid circular dependencies while maintaining type safety, this project uses TypeScript's structural typing between packages.
+
+### How It Works
+
+**agent-kit-payments** defines minimal interfaces:
+
+- `Priceable` - requires only a `price` field (uses `EntrypointPrice` type)
+
+**agent-kit** defines full interfaces independently:
+
+- `EntrypointDef` - includes `price` field, satisfies `Priceable`
+
+TypeScript's structural type system allows passing `EntrypointDef` to functions expecting `Priceable` automatically, without any imports or explicit extensions.
+
+### Benefits
+
+- Zero circular dependencies (strict DAG)
+- Packages are independently understandable
+- No type imports needed between packages
+- Smaller bundle sizes (tree-shakeable)
+
+### Trade-offs
+
+- Contracts are implicit in the code
+- Could break silently if field names change in agent-kit
+- Requires this documentation to explain the pattern
+
+### Example
+
+```typescript
+// agent-kit-payments defines minimal interface
+interface Priceable {
+  price?: string;
+}
+function resolvePrice(entity: Priceable) {
+  return entity.price;
+}
+
+// agent-kit defines full interface (separate package, no import)
+interface EntrypointDef {
+  key: string;
+  price?: string; // Has price field
+}
+
+// Usage works automatically
+const entrypoint: EntrypointDef = { key: 'chat', price: '100' };
+resolvePrice(entrypoint); // ✓ TypeScript allows this
+```
+
+### Maintenance
+
+When modifying types, ensure agent-kit's interfaces continue to satisfy agent-kit-payments' minimal interfaces:
+
+- `EntrypointDef.price` must remain compatible with `Priceable.price` (EntrypointPrice type)
+- `EntrypointDef.network` must remain compatible with `Priceable.network`
 
 ## Future Roadmap
 

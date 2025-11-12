@@ -1,5 +1,5 @@
 import type { PaymentsConfig } from '@lucid-agents/agent-kit-payments';
-import { resolveEntrypointPrice } from '@lucid-agents/agent-kit-payments';
+import { resolvePrice } from '@lucid-agents/agent-kit-payments';
 import { html } from 'hono/html';
 import type { HtmlEscapedString } from 'hono/utils/html';
 
@@ -752,17 +752,13 @@ export const renderLandingPage = ({
                     );
                     const description =
                       entrypoint.description ?? 'No description provided yet.';
-                    const invokePrice = resolveEntrypointPrice(
+                    const invokePrice = resolvePrice(
                       entrypoint,
                       activePayments,
                       'invoke'
                     );
                     const streamPrice = streaming
-                      ? resolveEntrypointPrice(
-                          entrypoint,
-                          activePayments,
-                          'stream'
-                        )
+                      ? resolvePrice(entrypoint, activePayments, 'stream')
                       : undefined;
                     const hasPricing = Boolean(invokePrice || streamPrice);
                     const network = entrypoint.network ?? defaultNetwork;

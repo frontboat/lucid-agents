@@ -1,6 +1,11 @@
-export type { PaymentsConfig, EntrypointPrice, SolanaAddress } from './types';
+export type {
+  PaymentsConfig,
+  EntrypointPrice,
+  SolanaAddress,
+  Priceable,
+} from './types';
 export type { PaymentRequirement } from './payments';
-export { resolveEntrypointPrice } from './pricing';
+export { resolvePrice } from './pricing';
 export { validatePaymentsConfig } from './validation';
 export { resolvePaymentRequirement, paymentRequiredResponse } from './payments';
 export {
@@ -20,3 +25,9 @@ export {
   type WrappedFetch,
   type X402Account,
 } from './x402';
+export {
+  sanitizeAddress,
+  normalizeAddress,
+  ZERO_ADDRESS,
+  type Hex,
+} from './crypto';

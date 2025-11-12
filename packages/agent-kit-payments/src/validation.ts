@@ -1,34 +1,14 @@
-import { SupportedEVMNetworks, SupportedSVMNetworks, type Network } from 'x402/types';
-import type { AgentMeta } from '@lucid-agents/agent-kit';
+import {
+  SupportedEVMNetworks,
+  SupportedSVMNetworks,
+  type Network,
+} from 'x402/types';
 import type { PaymentsConfig } from './types';
 
 const SUPPORTED_NETWORKS: Network[] = [
   ...SupportedEVMNetworks,
   ...SupportedSVMNetworks,
 ];
-
-/**
- * Validates required agent metadata and throws descriptive errors if invalid.
- * @param meta - Agent metadata to validate
- * @throws Error if required fields are missing
- */
-export function validateAgentMetadata(meta: AgentMeta): void {
-  const missingFields: string[] = [];
-  if (!meta.name) missingFields.push('name');
-  if (!meta.version) missingFields.push('version');
-  if (!meta.description) missingFields.push('description');
-
-  if (missingFields.length > 0) {
-    console.error(
-      '[agent-kit] Required agent metadata is missing:',
-      missingFields.join(', ')
-    );
-    throw new Error(
-      `Missing required agent metadata: ${missingFields.join(', ')}. ` +
-        `Please ensure AGENT_NAME, AGENT_VERSION, and AGENT_DESCRIPTION are set in your .env file.`
-    );
-  }
-}
 
 /**
  * Validates payment configuration and throws descriptive errors if invalid.

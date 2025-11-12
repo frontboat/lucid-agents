@@ -1,5 +1,5 @@
 /**
- * Address normalization and validation utilities
+ * Address normalization and validation utilities.
  */
 
 export type Hex = `0x${string}`;
@@ -32,3 +32,4 @@ export function sanitizeAddress(value: string | null | undefined): Hex {
   }
   return trimmed.toLowerCase() as Hex;
 }
+

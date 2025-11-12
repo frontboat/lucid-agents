@@ -5,7 +5,7 @@ import { toJsonSchemaOrUndefined } from './utils';
 import type { EntrypointDef } from '@lucid-agents/agent-kit';
 import type { PaymentsConfig } from '@lucid-agents/agent-kit-payments';
 import {
-  resolveEntrypointPrice,
+  resolvePrice,
   validatePaymentsConfig,
 } from '@lucid-agents/agent-kit-payments';
 
@@ -33,7 +33,7 @@ export function withPayments({
   if (!payments) return false;
 
   const network = entrypoint.network ?? payments.network;
-  const price = resolveEntrypointPrice(entrypoint, payments, kind);
+  const price = resolvePrice(entrypoint, payments, kind);
 
   validatePaymentsConfig(payments, network, entrypoint.key);
 

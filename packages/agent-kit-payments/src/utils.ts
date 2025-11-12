@@ -1,16 +1,17 @@
-import { getActiveInstanceConfig, getAgentKitConfig } from '@lucid-agents/agent-kit';
 import type { PaymentsConfig } from './types';
 
-export function paymentsFromEnv(params?: {
-  defaultPrice?: string;
-}): PaymentsConfig {
-  const activeInstanceConfig = getActiveInstanceConfig();
-  const { payments } = getAgentKitConfig(activeInstanceConfig);
+/**
+ * Creates PaymentsConfig from environment variables and optional overrides.
+ *
+ * @param configOverrides - Optional config overrides from agent-kit config
+ * @returns PaymentsConfig resolved from env + overrides
+ */
+export function paymentsFromEnv(configOverrides?: Partial<PaymentsConfig>): PaymentsConfig {
   return {
-    payTo: payments.payTo,
-    facilitatorUrl: payments.facilitatorUrl,
-    network: payments.network,
-    defaultPrice: params?.defaultPrice ?? payments.defaultPrice,
+    payTo: configOverrides?.payTo ?? (process.env.PAYMENTS_RECEIVABLE_ADDRESS as any),
+    facilitatorUrl: configOverrides?.facilitatorUrl ?? (process.env.FACILITATOR_URL as any),
+    network: configOverrides?.network ?? (process.env.NETWORK as any),
+    defaultPrice: configOverrides?.defaultPrice ?? process.env.DEFAULT_PRICE,
   };
 }
 

@@ -1,15 +1,18 @@
-import type { EntrypointDef } from '@lucid-agents/agent-kit';
-import type { PaymentsConfig } from './types';
+import type { Priceable, PaymentsConfig } from './types';
 
-export function resolveEntrypointPrice(
-  entrypoint: EntrypointDef,
+/**
+ * Resolves the price for a priceable entity.
+ */
+export function resolvePrice(
+  entity: Priceable,
   payments: PaymentsConfig | undefined,
   which: 'invoke' | 'stream'
 ): string | undefined {
-  if (typeof entrypoint.price === 'string') return entrypoint.price;
-  if (typeof entrypoint.price === 'object' && entrypoint.price) {
-    const value = entrypoint.price[which];
-    if (value) return value;
+  if (!entity.price) {
+    return payments?.defaultPrice;
+  } else if (typeof entity.price === 'string') {
+    return entity.price;
+  } else {
+    return entity.price[which] ?? payments?.defaultPrice;
   }
-  return payments?.defaultPrice;
 }

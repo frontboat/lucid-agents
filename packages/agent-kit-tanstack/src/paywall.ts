@@ -2,7 +2,7 @@ import type { AgentHttpRuntime, EntrypointDef } from '@lucid-agents/agent-kit';
 import { toJsonSchemaOrUndefined } from '@lucid-agents/agent-kit';
 import type { PaymentsConfig } from '@lucid-agents/agent-kit-payments';
 import {
-  resolveEntrypointPrice,
+  resolvePrice,
   validatePaymentsConfig,
 } from '@lucid-agents/agent-kit-payments';
 import type {
@@ -65,7 +65,7 @@ function buildEntrypointRoutes({
   for (const entrypoint of entrypoints) {
     if (kind === 'stream' && !entrypoint.stream) continue;
     const network = entrypoint.network ?? payments.network;
-    const price = resolveEntrypointPrice(entrypoint, payments, kind);
+    const price = resolvePrice(entrypoint, payments, kind);
 
     validatePaymentsConfig(payments, network, entrypoint.key);
 

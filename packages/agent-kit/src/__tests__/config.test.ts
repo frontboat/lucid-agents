@@ -92,7 +92,7 @@ describe('AgentKit config management', () => {
 
     const config = getAgentKitConfig();
     expect(config.payments.facilitatorUrl).toBe('https://facilitator.global');
-    const payments = paymentsFromEnv();
+    const payments = paymentsFromEnv(config.payments);
     expect(payments.facilitatorUrl).toBe('https://facilitator.global');
     expect(payments.defaultPrice).toBe('99');
   });

@@ -1,6 +1,6 @@
 import type { Network } from 'x402/types';
-import type { EntrypointDef } from '@lucid-agents/agent-kit';
-import type { PaymentsConfig } from './types';
+import type { Priceable, PaymentsConfig } from './types';
+import { resolvePrice } from './pricing';
 
 export type PaymentRequirement =
   | { required: false }
@@ -13,21 +13,23 @@ export type PaymentRequirement =
     };
 
 export const resolvePaymentRequirement = (
-  entrypoint: EntrypointDef,
+  entity: Priceable,
   kind: 'invoke' | 'stream',
   payments?: PaymentsConfig
 ): PaymentRequirement => {
-  if (!payments) return { required: false };
+  if (!payments) {
+    return { required: false };
+  }
 
-  const network = entrypoint.network ?? payments.network;
-  if (!network) return { required: false };
+  const network = entity.network ?? payments.network;
+  if (!network) {
+    return { required: false };
+  }
 
-  const price =
-    typeof entrypoint.price === 'string'
-      ? entrypoint.price
-      : (entrypoint.price?.[kind] ?? payments.defaultPrice);
-
-  if (!price) return { required: false };
+  const price = resolvePrice(entity, payments, kind);
+  if (!price) {
+    return { required: false };
+  }
 
   return {
     required: true,

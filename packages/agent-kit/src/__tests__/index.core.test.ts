@@ -1,6 +1,6 @@
 import { createAgentApp, withPayments } from '@lucid-agents/agent-kit-hono';
 import type { PaymentsConfig } from '@lucid-agents/agent-kit-payments';
-import { resolveEntrypointPrice } from '@lucid-agents/agent-kit-payments';
+import { resolvePrice } from '@lucid-agents/agent-kit-payments';
 import { describe, expect, it } from 'bun:test';
 import { z } from 'zod';
 
@@ -9,7 +9,7 @@ import { buildManifest } from '../index';
 
 const meta = { name: 'tester', version: '0.0.1', description: 'test agent' };
 
-describe('resolveEntrypointPrice', () => {
+describe('resolvePrice', () => {
   const payments: PaymentsConfig = {
     payTo: '0xabc0000000000000000000000000000000000000',
     facilitatorUrl: 'https://facilitator.example' as any,
@@ -19,7 +19,7 @@ describe('resolveEntrypointPrice', () => {
 
   it('prefers flat string price on entrypoint', () => {
     const entrypoint: EntrypointDef = { key: 'x', price: '10' };
-    expect(resolveEntrypointPrice(entrypoint, payments, 'invoke')).toBe('10');
+    expect(resolvePrice(entrypoint, payments, 'invoke')).toBe('10');
   });
 
   it('prefers per-method price object before default', () => {
@@ -27,20 +27,18 @@ describe('resolveEntrypointPrice', () => {
       key: 'x',
       price: { invoke: '7' },
     };
-    expect(resolveEntrypointPrice(entrypoint, payments, 'invoke')).toBe('7');
-    expect(resolveEntrypointPrice(entrypoint, payments, 'stream')).toBe('99');
+    expect(resolvePrice(entrypoint, payments, 'invoke')).toBe('7');
+    expect(resolvePrice(entrypoint, payments, 'stream')).toBe('99');
   });
 
   it('falls back to global default price', () => {
     const entrypoint: EntrypointDef = { key: 'x' };
-    expect(resolveEntrypointPrice(entrypoint, payments, 'invoke')).toBe('99');
+    expect(resolvePrice(entrypoint, payments, 'invoke')).toBe('99');
   });
 
   it('returns undefined when no price available', () => {
     const entrypoint: EntrypointDef = { key: 'x' };
-    expect(resolveEntrypointPrice(entrypoint, undefined, 'invoke')).toBe(
-      undefined
-    );
+    expect(resolvePrice(entrypoint, undefined, 'invoke')).toBe(undefined);
   });
 });
 

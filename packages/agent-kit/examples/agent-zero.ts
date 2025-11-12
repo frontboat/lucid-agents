@@ -579,7 +579,7 @@ function sessionQuestionToPayload(question: ActiveQuestion) {
 
 function maybeCreatePayout(balance: number) {
   if (balance < PAYOUT_THRESHOLD) return undefined;
-  const payments = paymentsFromEnv();
+  const payments = paymentsFromEnv(config.payments);
   if (!payments) {
     return {
       threshold: PAYOUT_THRESHOLD,

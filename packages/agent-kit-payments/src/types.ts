@@ -15,3 +15,11 @@ export type PaymentsConfig = {
 
 export type EntrypointPrice = string | { invoke?: string; stream?: string };
 
+/**
+ * Minimal interface for entities that can be priced.
+ * EntrypointDef from agent-kit satisfies this interface.
+ */
+export interface Priceable {
+  price?: EntrypointPrice;
+  network?: Network;
+}

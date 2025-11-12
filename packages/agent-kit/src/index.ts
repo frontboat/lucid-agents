@@ -65,11 +65,3 @@ export {
 } from './axllm';
 export * from './utils';
 export { validateAgentMetadata } from './validation';
-
-// Crypto utilities
-export {
-  type Hex,
-  normalizeAddress,
-  sanitizeAddress,
-  ZERO_ADDRESS,
-} from './crypto/address';

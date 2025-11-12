@@ -1,6 +1,6 @@
 import type { TrustConfig } from '@lucid-agents/agent-kit-identity';
 import type { PaymentsConfig } from '@lucid-agents/agent-kit-payments';
-import { resolveEntrypointPrice } from '@lucid-agents/agent-kit-payments';
+import { resolvePrice } from '@lucid-agents/agent-kit-payments';
 
 import type { AgentMeta } from '../core/types';
 import type { EntrypointDef } from '../http/types';
@@ -41,10 +41,8 @@ export function buildManifest({
       input_schema: toJsonSchemaOrUndefined(e.input),
       output_schema: toJsonSchemaOrUndefined(e.output),
     };
-    const invP = resolveEntrypointPrice(e, payments, 'invoke');
-    const strP = e.stream
-      ? resolveEntrypointPrice(e, payments, 'stream')
-      : undefined;
+    const invP = resolvePrice(e, payments, 'invoke');
+    const strP = e.stream ? resolvePrice(e, payments, 'stream') : undefined;
     if (invP || strP) {
       const pricing: NonNullable<typeof manifestEntry.pricing> = {};
       if (invP) pricing.invoke = invP;
