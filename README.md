@@ -1,113 +1,553 @@
-# Lucid Agents
+<div align="center">
+  <h1>Lucid Agents</h1>
+  <p><strong>The Multi-Runtime Framework for Building and Monetizing AI Agents</strong></p>
+  <p>Build, deploy, and monetize autonomous AI agents with typed entrypoints, on-chain identity, and built-in payment infrastructure.</p>
+</div>
 
-Build, ship, and monetize AI agents with a consistent surface across runtimes. This monorepo hosts the primitives we use to describe agent capabilities once and deliver them through web servers, manifests, and onchain identity.
+<div align="center">
+  <a href="https://github.com/daydreamsai/lucid-agents/blob/master/LICENSE"><img src="https://img.shields.io/github/license/daydreamsai/lucid-agents?style=for-the-badge" alt="License"></a>
+  <a href="https://www.npmjs.com/package/@lucid-agents/create-agent-kit"><img src="https://img.shields.io/npm/v/@lucid-agents/create-agent-kit?style=for-the-badge" alt="NPM Version"></a>
+  <a href="https://github.com/daydreamsai/lucid-agents/actions"><img src="https://img.shields.io/github/actions/workflow/status/daydreamsai/lucid-agents/ci.yml?branch=master&style=for-the-badge" alt="CI Status"></a>
+  <a href="https://bun.sh"><img src="https://img.shields.io/badge/runtime-bun-black?style=for-the-badge&logo=bun" alt="Bun"></a>
+</div>
 
-## Overview
+---
 
-- **Agent-first HTTP surface:** Define entrypoints with strict typing, instant discovery endpoints, and automatic AgentCard manifests.
-- **Built-in monetization:** x402 pricing, payments middleware, and helpers for paid LLM calls.
-- **Trust & identity:** ERC-8004 integrations so agents can prove ownership, reputation, and validation history.
+## What is Lucid Agents?
+
+Lucid Agents is a TypeScript-first framework for building production-ready AI agents with:
+
+- **Multi-runtime support**: Deploy the same agent logic across Hono, TanStack Start, or Next.js
+- **Built-in monetization**: x402 payment protocol with support for Ethereum (EVM) and Solana networks
+- **On-chain identity**: ERC-8004 integration for agent reputation, validation, and trust
+- **Type-safe APIs**: Zod-powered schemas with automatic manifest generation
+- **Developer experience**: CLI scaffolding, hot reload, and comprehensive examples
+
+Whether you're building a simple chatbot, a complex multi-agent system, or a marketplace of paid AI services, Lucid Agents provides the infrastructure you need.
+
+---
+
+## Key Features
+
+- **Multi-Adapter Architecture**: Write your agent logic once, deploy on Hono, TanStack Start, or Next.js
+- **x402 Payment Protocol**: Accept payments in USDC on Ethereum L2s (Base) or Solana with automatic paywall middleware
+- **ERC-8004 Identity Layer**: Register agent identities on-chain, build reputation, and prove ownership
+- **Type-Safe Entrypoints**: Define inputs/outputs with Zod schemas, get automatic validation and JSON schemas
+- **Streaming Support**: Server-Sent Events (SSE) for real-time agent responses
+- **AgentCard Manifests**: Auto-generated A2A-compatible manifests with Open Graph tags for discoverability
+- **Template System**: Scaffold new agents with `blank`, `axllm`, `axllm-flow`, or `identity` templates
+- **Multi-Network Support**: EVM (Base, Ethereum, Sepolia) and Solana (mainnet, devnet) payment networks
+- **Production-Ready**: Built with TypeScript strict mode, ESM modules, and comprehensive testing
+
+---
+
+## Quick Start (5 Minutes)
+
+Get your first monetized AI agent running in minutes.
+
+### Prerequisites
+
+- [Bun](https://bun.sh/docs/installation) >= 1.0 (recommended) or Node.js >= 20.9
+- An API key from your preferred LLM provider (OpenAI, Anthropic, etc.)
+- Optional: A wallet address for receiving payments
+
+### 1. Create and Configure Your Agent
+
+```bash
+# Interactive mode - CLI guides you through all options
+bunx @lucid-agents/create-agent-kit my-agent
+
+# Or use inline configuration for faster setup
+bunx @lucid-agents/create-agent-kit my-agent \
+  --adapter=hono \
+  --template=axllm \
+  --AGENT_NAME="My AI Agent" \
+  --AGENT_DESCRIPTION="AI-powered assistant" \
+  --OPENAI_API_KEY=your_api_key_here \
+  --PAYMENTS_RECEIVABLE_ADDRESS=0xYourAddress \
+  --NETWORK=base-sepolia \
+  --DEFAULT_PRICE=1000
+```
+
+The CLI will:
+
+- **Adapter selection**: `hono` (HTTP server), `tanstack-ui` (full dashboard), or `tanstack-headless` (API only)
+- **Template selection**: `blank` (minimal), `axllm` (LLM-powered), `axllm-flow` (workflows), or `identity` (on-chain identity)
+- **Configuration**: Set agent metadata, LLM keys, and optional payment details
+- **Install dependencies**: Automatically run `bun install`
+
+### 2. Start Your Agent
+
+```bash
+cd my-agent
+bun run dev
+```
+
+Your agent is now running at `http://localhost:3000`!
+
+**Try it out:**
+
+```bash
+# View agent manifest
+curl http://localhost:3000/.well-known/agent.json
+
+# List entrypoints
+curl http://localhost:3000/entrypoints
+
+# Invoke an entrypoint (example for echo template)
+curl -X POST http://localhost:3000/entrypoints/echo/invoke \
+  -H "Content-Type: application/json" \
+  -d '{"input": {"text": "Hello, Lucid Agents!"}}'
+```
+
+---
+
+## Architecture Overview
+
+Lucid Agents is a TypeScript monorepo built for multi-runtime agent deployment.
+
+> For detailed architecture documentation including dependency graphs, request flows, and extension system design, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+### Core Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                         Your Agent                          │
+│  ┌────────────────────────────────────────────────────────┐ │
+│  │  Entrypoints (typed with Zod)                          │ │
+│  │  ├─ invoke handlers (request → response)               │ │
+│  │  └─ stream handlers (request → SSE stream)             │ │
+│  └────────────────────────────────────────────────────────┘ │
+└──────────────────────────┬──────────────────────────────────┘
+                           │
+         ┌─────────────────┼─────────────────┐
+         │                 │                 │
+    ┌────▼─────┐    ┌──────▼──────┐   ┌─────▼──────┐
+    │   Hono   │    │  TanStack   │   │  Next.js   │
+    │  Adapter │    │   Adapter   │   │  Adapter   │
+    └────┬─────┘    └──────┬──────┘   └─────┬──────┘
+         │                 │                 │
+         └─────────────────┼─────────────────┘
+                           │
+         ┌─────────────────┴─────────────────┐
+         │                                   │
+    ┌────▼──────────┐              ┌────────▼────────┐
+    │  agent-kit    │              │  agent-kit-     │
+    │  (core)       │◄─────────────┤  identity       │
+    │               │              │  (ERC-8004)     │
+    └───────────────┘              └─────────────────┘
+```
+
+### Package Structure
+
+```
+/
+├── packages/
+│   ├── agent-kit/              # Core runtime and types
+│   │   ├── src/core/           # Agent runtime, manifest generation
+│   │   ├── src/http/           # HTTP utilities
+│   │   └── src/axllm/          # LLM integration helpers
+│   │
+│   ├── agent-kit-hono/         # Hono HTTP server adapter
+│   │   ├── src/app.ts          # createAgentApp() for Hono
+│   │   └── src/paywall.ts      # x402 payment middleware
+│   │
+│   ├── agent-kit-tanstack/     # TanStack Start adapter
+│   │   ├── src/runtime.ts      # createTanStackRuntime()
+│   │   └── src/paywall.ts      # TanStack payment middleware
+│   │
+│   ├── agent-kit-identity/     # ERC-8004 identity toolkit
+│   │   ├── src/init.ts         # createAgentIdentity()
+│   │   ├── src/registries/     # Identity/Reputation/Validation clients
+│   │   └── src/utils/          # Signature helpers, CAIP-10
+│   │
+│   ├── agent-kit-payments/     # x402 payment utilities
+│   │   ├── src/payments.ts     # Multi-network payment config
+│   │   └── src/x402.ts         # x402 protocol helpers
+│   │
+│   └── create-agent-kit/       # CLI scaffolding tool
+│       ├── src/index.ts        # Interactive CLI
+│       ├── adapters/           # Runtime frameworks (hono, tanstack, next)
+│       └── templates/          # Project templates (blank, axllm, identity)
+```
+
+### Key Concepts
+
+**Entrypoints**: Typed API endpoints that define your agent's capabilities. Each entrypoint has:
+
+- Input/output schemas (Zod)
+- Optional pricing (x402)
+- Handler (synchronous) or stream handler (SSE)
+
+**Adapters**: Runtime frameworks that expose your entrypoints as HTTP routes. Choose based on your deployment needs:
+
+- `hono` - Lightweight, edge-compatible
+- `tanstack` - Full-stack React with UI dashboard
+- `next` - Next.js App Router integration
+
+**Manifests**: Auto-generated AgentCard (`.well-known/agent.json`) that describes your agent's capabilities, pricing, and identity for discovery tools and A2A protocols.
+
+**Payment Networks**: Accept payments on:
+
+- **EVM**: Base, Ethereum, Sepolia (ERC-20 USDC)
+- **Solana**: Mainnet, Devnet (SPL USDC)
+
+**Identity**: ERC-8004 on-chain identity for reputation and trust. Register once, reference across all networks.
+
+---
 
 ## Key Packages
 
-- [`@lucid-agents/agent-kit`](packages/agent-kit/README.md) — Hono wrapper that registers entrypoints, serves manifests, manages payments, and exposes trust metadata utilities.
-- [`@lucid-agents/create-agent-kit`](packages/create-agent-kit/README.md) — CLI scaffolding tool to generate new agent projects with templates, environment setup, and optional dependency installation.
-- [`@lucid-agents/agent-kit-identity`](packages/agent-kit-identity/README.md) — ERC-8004 toolkit for registering agents, generating trust configs, and working with reputation/validation registries.
+### Core Packages
 
-Each package README contains API details, environment variables, and complete examples.
+#### [`@lucid-agents/agent-kit`](packages/agent-kit/README.md)
 
-## Features
+Core agent runtime with entrypoints, manifests, and streaming support.
 
-- **Agent Kit runtime:** Ship typed entrypoints, manifests, and trust metadata with minimal wiring.
-- **x402 bootstrapping:** Scaffold paid invoke/stream endpoints with CLI templates, payments middleware, and helper utilities.
-- **Agent auth + ERC-8004:** Register identities, expose trust manifests, and manage reputation reviews via on-chain APIs.
+```typescript
+import { createRuntime } from '@lucid-agents/agent-kit';
+import { z } from 'zod';
 
-## Example
+const runtime = createRuntime({
+  name: 'my-agent',
+  version: '1.0.0',
+  description: 'My first agent',
+});
 
-```ts
-import { z } from "zod";
-import { createAgentApp } from "@lucid-agents/agent-kit";
+runtime.addEntrypoint({
+  key: 'greet',
+  input: z.object({ name: z.string() }),
+  async handler({ input }) {
+    return { output: { message: `Hello, ${input.name}!` } };
+  },
+});
+```
+
+#### [`@lucid-agents/agent-kit-hono`](packages/agent-kit-hono/README.md)
+
+Hono adapter for building traditional HTTP servers.
+
+```typescript
+import { createAgentApp } from '@lucid-agents/agent-kit-hono';
+
+const { app, addEntrypoint } = createAgentApp({
+  name: 'my-agent',
+  version: '1.0.0',
+});
+
+// Add entrypoints...
+
+export default app; // Bun.serve or Hono serve
+```
+
+#### [`@lucid-agents/agent-kit-tanstack`](packages/agent-kit-tanstack/README.md)
+
+TanStack Start adapter with UI and headless variants.
+
+```typescript
+import { createTanStackRuntime } from '@lucid-agents/agent-kit-tanstack';
+
+export const { runtime, handlers } = createTanStackRuntime({
+  name: 'my-agent',
+  version: '1.0.0',
+});
+```
+
+#### [`@lucid-agents/agent-kit-identity`](packages/agent-kit-identity/README.md)
+
+ERC-8004 toolkit for on-chain identity, reputation, and validation.
+
+```typescript
+import { createAgentIdentity } from '@lucid-agents/agent-kit-identity';
+
+const identity = await createAgentIdentity({
+  domain: 'my-agent.example.com',
+  autoRegister: true, // Register on-chain if not exists
+});
+```
+
+#### [`@lucid-agents/agent-kit-payments`](packages/agent-kit-payments/README.md)
+
+x402 payment utilities for multi-network payment handling.
+
+```typescript
+import { paymentsFromEnv } from '@lucid-agents/agent-kit-payments';
+
+const payments = paymentsFromEnv();
+// Auto-detects EVM vs Solana from PAYMENTS_RECEIVABLE_ADDRESS format
+```
+
+### CLI Tool
+
+#### [`@lucid-agents/create-agent-kit`](packages/create-agent-kit/README.md)
+
+CLI for scaffolding new agent projects with templates and interactive configuration.
+
+```bash
+# Interactive mode
+bunx @lucid-agents/create-agent-kit
+
+# With options
+bunx @lucid-agents/create-agent-kit my-agent \
+  --adapter=tanstack-ui \
+  --template=axllm \
+  --non-interactive
+```
+
+Each package contains detailed API documentation, environment variable references, and working examples.
+
+---
+
+## Example: Full-Featured Agent
+
+Here's a complete example showing identity, payments, and LLM integration:
+
+```typescript
+import { z } from 'zod';
+import { createAgentApp } from '@lucid-agents/agent-kit-hono';
 import {
   createAgentIdentity,
   getTrustConfig,
-} from "@lucid-agents/agent-kit-identity";
+} from '@lucid-agents/agent-kit-identity';
+import { AI } from '@ax-llm/ax';
 
+// 1. Create on-chain identity
 const identity = await createAgentIdentity({
-  domain: "my-agent.example.com",
+  domain: 'my-agent.example.com',
   autoRegister: true,
 });
 
+// 2. Initialize LLM
+const ai = new AI({
+  provider: 'openai',
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+// 3. Create agent with payments and identity
 const { app, addEntrypoint } = createAgentApp(
   {
-    name: "demo-agent",
-    version: "0.1.0",
-    description: "Echo text with optional reputation lookup",
+    name: 'ai-assistant',
+    version: '1.0.0',
+    description: 'AI assistant with on-chain reputation',
+    image: 'https://my-agent.example.com/og-image.png',
   },
   {
+    config: {
+      payments: {
+        payTo: process.env.PAYMENTS_RECEIVABLE_ADDRESS!,
+        network: 'base-sepolia',
+        facilitatorUrl: 'https://facilitator.daydreams.systems',
+        defaultPrice: '5000', // 0.005 USDC per request
+      },
+    },
+    useConfigPayments: true,
     trust: getTrustConfig(identity),
   }
 );
 
+// 4. Add paid entrypoint with streaming
 addEntrypoint({
-  key: "echo",
-  description: "Echo a message back",
-  input: z.object({ text: z.string() }),
-  async handler({ input }) {
-    return { output: { text: input.text } };
+  key: 'chat',
+  description: 'Chat with AI assistant',
+  input: z.object({
+    message: z.string(),
+    history: z
+      .array(
+        z.object({
+          role: z.enum(['user', 'assistant']),
+          content: z.string(),
+        })
+      )
+      .optional(),
+  }),
+  streaming: true,
+  async stream(ctx, emit) {
+    const messages = [
+      ...(ctx.input.history || []),
+      { role: 'user' as const, content: ctx.input.message },
+    ];
+
+    const stream = await ai.chat.stream({ messages });
+
+    for await (const chunk of stream) {
+      await emit({
+        kind: 'delta',
+        delta: chunk.delta,
+        mime: 'text/plain',
+      });
+    }
+
+    return {
+      output: { completed: true },
+      usage: { total_tokens: stream.usage.total_tokens },
+    };
   },
 });
 
 export default app;
 ```
 
-This pair wires together the agent runtime and ERC-8004 trust metadata in just a few lines. Dive deeper in the package READMEs linked above.
+**Features demonstrated:**
 
-## Getting Started
+- On-chain identity registration (ERC-8004)
+- Automatic x402 payment verification
+- Streaming LLM responses via SSE
+- Type-safe input/output schemas
+- Trust metadata in manifest
+- Open Graph tags for discovery
 
-### Quick Start: Scaffold a New Agent
+---
 
-The fastest way to get started is with the CLI scaffolding tool:
+## Development
+
+### Setup
 
 ```bash
-bunx @lucid-agents/create-agent-kit@latest
+# Clone the repository
+git clone https://github.com/daydreamsai/lucid-agents.git
+cd lucid-agents
+
+# Install dependencies
+bun install
+
+# Build all packages
+bun run build:packages
 ```
 
-The interactive CLI will:
+### Package Development
 
-1. Guide you through template selection (`blank`, `axllm`, or `axllm-flow`)
-2. Set up your project with agent metadata and entrypoints
-3. Configure environment variables for payments and identity (optional)
-4. Install dependencies automatically if you choose
+```bash
+# Work on a specific package
+cd packages/agent-kit
 
-See the [`create-agent-kit` README](packages/create-agent-kit/README.md) for detailed CLI options and template descriptions.
+# Build this package
+bun run build
 
-### Working with the Codebase
+# Run tests
+bun test
 
-If you're contributing or exploring the monorepo:
+# Type check
+bun run type-check
 
-1. **Install dependencies**: `bun install`
-2. **Explore packages**:
-   - [`agent-kit`](packages/agent-kit/README.md) — Core runtime for building agent servers
-   - [`agent-kit-identity`](packages/agent-kit-identity/README.md) — ERC-8004 identity and trust
-   - [`create-agent-kit`](packages/create-agent-kit/README.md) — CLI for scaffolding projects
-3. **Run examples**: Check `examples/` in each package for working code samples
-4. **Build packages**: `bun run build:packages`
+# Lint and format
+bun run lint:fix
+bun run format
+```
 
-## Contributing
+---
 
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines on:
+## How to Contribute
 
-- Setting up your development environment
-- Making changes and submitting pull requests
-- Testing and code standards
+We welcome contributions from the community! Here's how to get started:
+
+### Reporting Issues
+
+- **Bug Reports**: Use the [issue tracker](https://github.com/daydreamsai/lucid-agents/issues) with detailed reproduction steps
+- **Feature Requests**: Describe the use case and proposed API
+- **Questions**: Open a discussion or join our community channels
+
+### Contributing Code
+
+1. **Fork the repository** and create a feature branch
+
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+
+2. **Make your changes** following our code standards:
+   - TypeScript strict mode
+   - ESM modules (`import`/`export`)
+   - Comprehensive tests for new features
+   - Update documentation (README, inline comments)
+
+3. **Create a changeset** for release notes:
+
+   ```bash
+   bun run changeset
+   ```
+
+   Follow the prompts to:
+   - Select which packages are affected
+   - Choose the version bump type (major/minor/patch)
+   - Write a clear summary of your changes
+
+   See [CONTRIBUTING.md](CONTRIBUTING.md#release-process) for detailed changeset guidelines.
+
+4. **Test your changes**:
+
+   ```bash
+   bun test
+   bun run build:packages
+   ```
+
+5. **Submit a pull request** with:
+   - Clear description of changes
+   - Link to related issues
+   - Screenshots for UI changes
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines on:
+
+- Development workflow
+- Testing conventions
 - Release process with changesets
+- Code standards and best practices
 
-Quick tips:
+### Good First Issues
 
-- Use `bun test` and package-level scripts before opening PRs
-- Keep documentation up to date when changing APIs
-- Follow TypeScript strict mode and ESM standards
+Look for issues labeled [`good first issue`](https://github.com/daydreamsai/lucid-agents/labels/good%20first%20issue) if you're new to the project.
+
+---
 
 ## Resources
 
-- ERC-8004 specification: <https://eips.ethereum.org/EIPS/eip-8004>
+### Documentation
+
+- **Architecture Guide**: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) - System design, dependency graphs, and request flows
+- **Package READMEs**: Each package has comprehensive documentation and `AGENTS.md` files
+- **Contributing Guide**: [CONTRIBUTING.md](CONTRIBUTING.md) - Development workflow and guidelines
+
+### Protocols & Specifications
+
+- **ERC-8004 Specification**: [EIP-8004](https://eips.ethereum.org/EIPS/eip-8004) - On-chain agent identity standard
+- **x402 Protocol**: [x402 GitHub](https://github.com/paywithx402) - HTTP-native payment protocol
+- **A2A Protocol**: [Agent-to-Agent Communication](https://agents.md/) - Agent discovery and communication
+
+### Technologies
+
+- **Hono Framework**: [hono.dev](https://hono.dev/) - Lightweight web framework
+- **TanStack Start**: [tanstack.com/start](https://tanstack.com/start) - Full-stack React framework
+- **Bun Runtime**: [bun.sh](https://bun.sh/) - Fast JavaScript runtime
+- **Zod**: [zod.dev](https://zod.dev/) - TypeScript-first schema validation
+
+---
+
+## License
+
+This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
+
+---
+
+## Contributors
+
+<a href="https://github.com/daydreamsai/lucid-agents/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=daydreamsai/lucid-agents" alt="Contributors" />
+</a>
+
+---
+
+## Star History
+
+<a href="https://star-history.com/#daydreamsai/lucid-agents&Date">
+  <img src="https://api.star-history.com/svg?repos=daydreamsai/lucid-agents&type=Date" alt="Star History Chart" />
+</a>
+
+---
+
+<div align="center">
+  <p>Built with ❤️ by the Daydreams AI team</p>
+  <p>
+    <a href="https://github.com/daydreamsai/lucid-agents">GitHub</a> •
+    <a href="https://www.npmjs.com/org/lucid-agents">npm</a> •
+    <a href="https://twitter.com/daydreamsai">Twitter</a>
+  </p>
+</div>
