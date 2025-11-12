@@ -1,12 +1,14 @@
-import { z } from "zod";
-import type {
-  AgentConfig,
-  AgentContext,
-  EntrypointDef,
-  PaymentsConfig,
-  StreamResult,
-  Usage,
-} from "./types";
+import type { PaymentsConfig } from '@lucid-agents/agent-kit-payments';
+import { z } from 'zod';
+
+import type { EntrypointDef, StreamResult } from '../http/types';
+import type { AgentContext, AgentMeta, Usage } from './types';
+
+export type AgentConfig = {
+  meta: AgentMeta;
+  payments?: PaymentsConfig | false;
+  walletConnectProjectId?: string;
+};
 
 export type InvokeContext = {
   signal: AbortSignal;
@@ -27,9 +29,12 @@ export class AgentCore {
 
   constructor(public readonly config: AgentConfig) {}
 
-  addEntrypoint(entrypoint: EntrypointDef): void {
-    if (!entrypoint.key || typeof entrypoint.key !== "string") {
-      throw new Error("Entrypoint must include a non-empty string key");
+  addEntrypoint<
+    TInput extends z.ZodTypeAny | undefined = z.ZodTypeAny | undefined,
+    TOutput extends z.ZodTypeAny | undefined = z.ZodTypeAny | undefined,
+  >(entrypoint: EntrypointDef<TInput, TOutput>): void {
+    if (!entrypoint.key || typeof entrypoint.key !== 'string') {
+      throw new Error('Entrypoint must include a non-empty string key');
     }
     this.entrypoints.set(entrypoint.key, entrypoint);
   }
@@ -42,15 +47,13 @@ export class AgentCore {
     return Array.from(this.entrypoints.values());
   }
 
-  resolveManifest(origin: string, basePath: string = "") {
-    const originBase = origin.endsWith("/")
-      ? origin.slice(0, -1)
-      : origin;
+  resolveManifest(origin: string, basePath: string = '') {
+    const originBase = origin.endsWith('/') ? origin.slice(0, -1) : origin;
     const normalizedBasePath = basePath
-      ? basePath.startsWith("/")
+      ? basePath.startsWith('/')
         ? basePath
         : `/${basePath}`
-      : "";
+      : '';
     const baseUrl = `${originBase}${normalizedBasePath}`;
 
     return {
@@ -58,7 +61,7 @@ export class AgentCore {
       version: this.config.meta.version,
       description: this.config.meta.description,
       icon: this.config.meta.icon,
-      entrypoints: this.listEntrypoints().map((entrypoint) => {
+      entrypoints: this.listEntrypoints().map(entrypoint => {
         const supportsStreaming = Boolean(
           entrypoint.stream ?? entrypoint.streaming
         );
@@ -109,7 +112,7 @@ export class AgentCore {
   async stream(
     key: string,
     input: unknown,
-    emit: Parameters<NonNullable<EntrypointDef["stream"]>>[1],
+    emit: Parameters<NonNullable<EntrypointDef['stream']>>[1],
     ctx: StreamContext
   ): Promise<StreamResult> {
     const entrypoint = this.getEntrypointOrThrow(key);
@@ -133,7 +136,7 @@ export class AgentCore {
     if (!isZodSchema(schema)) return value;
     const parsed = schema.safeParse(value);
     if (!parsed.success) {
-      throw new ZodValidationError("input", parsed.error.issues);
+      throw new ZodValidationError('input', parsed.error.issues);
     }
     return parsed.data;
   }
@@ -144,7 +147,7 @@ export class AgentCore {
     if (!isZodSchema(schema)) return value;
     const parsed = schema.safeParse(value);
     if (!parsed.success) {
-      throw new ZodValidationError("output", parsed.error.issues);
+      throw new ZodValidationError('output', parsed.error.issues);
     }
     return parsed.data;
   }
@@ -160,19 +163,17 @@ export class AgentCore {
 
 export class ZodValidationError extends Error {
   constructor(
-    public readonly kind: "input" | "output",
-    public readonly issues: z.ZodError["issues"]
+    public readonly kind: 'input' | 'output',
+    public readonly issues: z.ZodError['issues']
   ) {
     super(
-      kind === "input"
-        ? "Invalid input provided"
-        : "Invalid output produced"
+      kind === 'input' ? 'Invalid input provided' : 'Invalid output produced'
     );
   }
 }
 
 function isZodSchema(value: unknown): value is z.ZodTypeAny {
-  return Boolean(value && typeof value === "object" && "safeParse" in value);
+  return Boolean(value && typeof value === 'object' && 'safeParse' in value);
 }
 
 function toJsonSchema(schema: z.ZodTypeAny | undefined) {
@@ -186,18 +187,4 @@ function toJsonSchema(schema: z.ZodTypeAny | undefined) {
 
 export function createAgentCore(config: AgentConfig): AgentCore {
   return new AgentCore(config);
-}
-
-export function resolveEntrypointPrice(
-  entrypoint: EntrypointDef,
-  payments: PaymentsConfig | undefined,
-  kind: "invoke" | "stream"
-): string | undefined {
-  if (typeof entrypoint.price === "string") {
-    return entrypoint.price;
-  }
-  if (entrypoint.price && entrypoint.price[kind]) {
-    return entrypoint.price[kind] ?? undefined;
-  }
-  return payments?.defaultPrice;
 }
