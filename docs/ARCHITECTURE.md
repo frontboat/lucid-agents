@@ -17,7 +17,7 @@ graph TB
     subgraph "Layer 2: Core"
         core["@lucid-agents/agent-kit<br/>Core runtime & types"]
     end
-
+    
     subgraph "Layer 3: Adapters"
         hono["@lucid-agents/agent-kit-hono<br/>Hono framework adapter"]
         tanstack["@lucid-agents/agent-kit-tanstack<br/>TanStack Start adapter"]
@@ -29,16 +29,16 @@ graph TB
         templates["Templates<br/>(blank, axllm, identity, etc.)"]
     end
 
-    identity --> core
-    payments --> core
-
-    core --> hono
-    core --> tanstack
-    core -.-> express
-
-    hono --> cli
-    tanstack --> cli
-    templates --> cli
+    core --> identity
+    core --> payments
+    
+    hono --> core
+    tanstack --> core
+    express -.-> core
+    
+    cli --> hono
+    cli --> tanstack
+    cli --> templates
 
     style identity fill:#e1f5ff
     style payments fill:#e1f5ff
@@ -260,19 +260,21 @@ Packages must build in dependency order:
 
 ```mermaid
 graph LR
-    A[1. agent-kit-identity] --> B[2. agent-kit-payments]
-    B --> C[3. agent-kit]
-    C --> D[4. agent-kit-hono]
-    C --> E[4. agent-kit-tanstack]
-    D --> F[5. create-agent-kit]
-    E --> F
+    A[1. x402-tanstack-start] --> B[2. agent-kit-identity]
+    B --> C[3. agent-kit-payments]
+    C --> D[4. agent-kit]
+    D --> E[5. agent-kit-hono]
+    D --> F[6. agent-kit-tanstack]
+    E --> G[7. create-agent-kit]
+    F --> G
 
-    style A fill:#90caf9
-    style B fill:#a5d6a7
-    style C fill:#ffcc80
-    style D fill:#ce93d8
+    style A fill:#b39ddb
+    style B fill:#90caf9
+    style C fill:#a5d6a7
+    style D fill:#ffcc80
     style E fill:#ce93d8
-    style F fill:#ef9a9a
+    style F fill:#ce93d8
+    style G fill:#ef9a9a
 ```
 
 ## Package Responsibilities
