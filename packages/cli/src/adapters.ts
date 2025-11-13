@@ -66,7 +66,7 @@ const adapterDefinitions: Record<string, AdapterDefinition> = {
     filesDir: join(ADAPTER_FILES_ROOT, 'express'),
     placeholderTargets: ['src/lib/agent.ts.template'],
     snippets: {
-      imports: `import { createAgentApp } from "@lucid-agents/agent-kit-express";`,
+      imports: `import { createAgentApp } from "@lucid-agents/express";`,
       preSetup: ``,
       appCreation: `const { app, addEntrypoint } = createAgentApp(
   {

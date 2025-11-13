@@ -8,4 +8,13 @@ export default defineConfig({
   sourcemap: true,
   clean: true,
   treeshake: true,
+  external: [
+    '@lucid-agents/core',
+    '@lucid-agents/payments',
+    '@lucid-agents/types',
+    'hono',
+    'x402-hono',
+    'x402',
+    'zod',
+  ],
 });

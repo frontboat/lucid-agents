@@ -126,7 +126,7 @@ bunx @lucid-agents/cli@latest my-agent --network=base
 bunx @lucid-agents/cli@latest my-agent --template=identity --network=solana
 
 # With Express adapter
-bunx @lucid-agents/create-agent-kit@latest my-agent --adapter=express --template=blank
+bunx @lucid-agents/cli@latest my-agent --adapter=express --template=blank
 
 # With Hono adapter
 bunx @lucid-agents/cli@latest my-agent --adapter=hono --template=blank
