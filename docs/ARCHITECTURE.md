@@ -8,26 +8,34 @@ The SDK is organized into four architectural layers:
 
 ```mermaid
 graph TB
+    subgraph "Layer 0: Types"
+        types["@lucid-agents/types<br/>Shared type definitions"]
+    end
+
     subgraph "Layer 1: Extensions"
-        identity["@lucid-agents/agent-kit-identity<br/>ERC-8004 identity & trust"]
-        payments["@lucid-agents/agent-kit-payments<br/>x402 bi-directional payments"]
+        identity["@lucid-agents/identity<br/>ERC-8004 identity & trust"]
+        payments["@lucid-agents/payments<br/>x402 bi-directional payments"]
         future["Future extensions<br/>(wallet, monitoring, etc.)"]
     end
 
     subgraph "Layer 2: Core"
-        core["@lucid-agents/agent-kit<br/>Core runtime & types"]
+        core["@lucid-agents/core<br/>Core runtime"]
     end
 
     subgraph "Layer 3: Adapters"
-        hono["@lucid-agents/agent-kit-hono<br/>Hono framework adapter"]
-        tanstack["@lucid-agents/agent-kit-tanstack<br/>TanStack Start adapter"]
+        hono["@lucid-agents/hono<br/>Hono framework adapter"]
+        tanstack["@lucid-agents/tanstack<br/>TanStack Start adapter"]
         express["Future: Express adapter"]
     end
 
     subgraph "Layer 4: Developer Tools"
-        cli["@lucid-agents/create-agent-kit<br/>CLI scaffolding tool"]
+        cli["@lucid-agents/cli<br/>CLI scaffolding tool"]
         templates["Templates<br/>(blank, axllm, identity, etc.)"]
     end
+
+    types --> identity
+    types --> payments
+    types --> core
 
     core --> identity
     core --> payments
@@ -55,33 +63,42 @@ graph TB
 
 ```mermaid
 graph LR
+    subgraph "Types Foundation"
+        types[types]
+    end
+
     subgraph "Extensions (Independent)"
-        identity[agent-kit-identity]
-        payments[agent-kit-payments]
+        identity[identity]
+        payments[payments]
     end
 
     subgraph "Core Runtime"
-        core[agent-kit]
+        core[core]
     end
 
     subgraph "Framework Adapters"
-        hono[agent-kit-hono]
-        tanstack[agent-kit-tanstack]
+        hono[hono]
+        tanstack[tanstack]
     end
 
     subgraph "Developer Tools"
-        cli[create-agent-kit]
+        cli[cli]
     end
 
-    core --> payments
-    core --> identity
+    types --> identity
+    types --> payments
+    types --> core
 
-    hono --> core
-    tanstack --> core
+    payments --> core
+    identity --> core
 
-    cli --> hono
-    cli --> tanstack
+    core --> hono
+    core --> tanstack
 
+    hono --> cli
+    tanstack --> cli
+
+    style types fill:#4fc3f7
     style identity fill:#81c784
     style payments fill:#81c784
     style core fill:#ffb74d
@@ -90,7 +107,7 @@ graph LR
     style cli fill:#e57373
 ```
 
-Note: Dependencies shown are runtime imports only. No type imports exist between extensions and core. Structural typing provides type compatibility (see Structural Typing Pattern section above).
+Note: Dependencies are one-directional. @lucid-agents/core imports from extensions (both types and runtime functions). All packages import shared types from @lucid-agents/types. This pure DAG structure eliminates circular dependencies.
 
 ## Layer 1: Extensions
 
@@ -316,63 +333,56 @@ graph TB
 
 Extensions are independent modules that core can optionally use. Neither depends on the other.
 
-## Structural Typing Pattern
+## Types Package
 
-To avoid circular dependencies while maintaining type safety, this project uses TypeScript's structural typing between packages.
+`@lucid-agents/types` is the foundational package containing all shared type definitions.
 
-### How It Works
+### Key Characteristics
 
-**agent-kit-payments** defines minimal interfaces:
+- **Zero dependencies** on other @lucid-agents packages
+- **Only external dependencies**: zod, x402
+- **Pure TypeScript types** - no runtime code
+- **Single source of truth** for type contracts
 
-- `Priceable` - requires only a `price` field (uses `EntrypointPrice` type)
+### Contains
 
-**agent-kit** defines full interfaces independently:
+- `AgentMeta`, `AgentContext`, `Usage` - Core agent types
+- `EntrypointDef`, `EntrypointPrice`, `EntrypointHandler` - Entrypoint types
+- `PaymentsConfig`, `SolanaAddress` - Payment types
+- Stream types for SSE responses
 
-- `EntrypointDef` - includes `price` field, satisfies `Priceable`
+### Architecture Benefits
 
-TypeScript's structural type system allows passing `EntrypointDef` to functions expecting `Priceable` automatically, without any imports or explicit extensions.
+All packages import from @lucid-agents/types, creating a clean dependency DAG:
 
-### Benefits
+```mermaid
+graph TD
+    types[@lucid-agents/types]
+    identity[@lucid-agents/identity]
+    payments[@lucid-agents/payments]
+    core[@lucid-agents/core]
+    hono[@lucid-agents/hono]
+    tanstack[@lucid-agents/tanstack]
+    cli[@lucid-agents/cli]
 
-- Zero circular dependencies (strict DAG)
-- Packages are independently understandable
-- No type imports needed between packages
-- Smaller bundle sizes (tree-shakeable)
-
-### Trade-offs
-
-- Contracts are implicit in the code
-- Could break silently if field names change in agent-kit
-- Requires this documentation to explain the pattern
-
-### Example
-
-```typescript
-// agent-kit-payments defines minimal interface
-interface Priceable {
-  price?: string;
-}
-function resolvePrice(entity: Priceable) {
-  return entity.price;
-}
-
-// agent-kit defines full interface (separate package, no import)
-interface EntrypointDef {
-  key: string;
-  price?: string; // Has price field
-}
-
-// Usage works automatically
-const entrypoint: EntrypointDef = { key: 'chat', price: '100' };
-resolvePrice(entrypoint); // ✓ TypeScript allows this
+    types --> identity
+    types --> payments
+    types --> core
+    identity --> core
+    payments --> core
+    core --> hono
+    core --> tanstack
+    hono --> cli
+    tanstack --> cli
 ```
 
-### Maintenance
+**Benefits:**
 
-When modifying types, ensure agent-kit's interfaces continue to satisfy agent-kit-payments' minimal interfaces:
-
-- `EntrypointDef.price` must remain compatible with `Priceable.price` (EntrypointPrice type)
-- `EntrypointDef.network` must remain compatible with `Priceable.network`
+- Zero circular dependencies (pure DAG)
+- Explicit type contracts
+- Better IDE support and type inference
+- Smaller bundles (types erased at compile time)
+- Easy to maintain and evolve
 
 ## Future Roadmap
 
