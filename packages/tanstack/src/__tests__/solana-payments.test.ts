@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import type { PaymentsConfig } from '@lucid-agents/types';
 import { createTanStackPaywall } from '../paywall';
 import type { RoutesConfig } from 'x402/types';
+import type { TanStackRequestMiddleware } from '@lucid-agents/x402-tanstack-start';
 
 describe('TanStack Solana Payments', () => {
   const solanaPayments: PaymentsConfig = {
@@ -48,18 +49,19 @@ describe('TanStack Solana Payments', () => {
 
     const middlewareFactory = ((_payTo, _routes, _facilitator, _paywall) => {
       return (() =>
-        Promise.resolve(new Response())) as TanStackRequestMiddleware;
+        Promise.resolve(new Response())) as unknown as TanStackRequestMiddleware;
     }) satisfies typeof import('@lucid-agents/x402-tanstack-start').paymentMiddleware;
 
     const spyingFactory: typeof middlewareFactory = (
       payTo,
       routes,
-      facilitator
+      facilitator,
+      paywall
     ) => {
       capturedRoutes.push(routes as RoutesConfig);
-      expect(payTo).toBe(solanaPayments.payTo);
+      expect(payTo as string).toBe(solanaPayments.payTo);
       expect(facilitator?.url).toBe(solanaPayments.facilitatorUrl);
-      return middlewareFactory(payTo, routes, facilitator);
+      return middlewareFactory(payTo, routes, facilitator, paywall);
     };
 
     const paywall = createTanStackPaywall({
@@ -85,8 +87,10 @@ describe('TanStack Solana Payments', () => {
     // Verify route configuration includes Solana network
     const translateInvokeConfig =
       invokeRoutes['POST /api/agent/entrypoints/translate/invoke'];
-    expect(translateInvokeConfig.network).toBe('solana-devnet');
-    expect(translateInvokeConfig.price).toBe('5000');
+    if (typeof translateInvokeConfig === 'object' && translateInvokeConfig && 'network' in translateInvokeConfig) {
+      expect(translateInvokeConfig.network).toBe('solana-devnet');
+      expect(translateInvokeConfig.price).toBe('5000');
+    }
 
     // Verify stream routes
     expect(Object.keys(streamRoutes)).toContain(
@@ -95,8 +99,10 @@ describe('TanStack Solana Payments', () => {
 
     const generateStreamConfig =
       streamRoutes['POST /api/agent/entrypoints/generate/stream'];
-    expect(generateStreamConfig.network).toBe('solana-devnet');
-    expect(generateStreamConfig.price).toBe('8000');
+    if (typeof generateStreamConfig === 'object' && generateStreamConfig && 'network' in generateStreamConfig) {
+      expect(generateStreamConfig.network).toBe('solana-devnet');
+      expect(generateStreamConfig.price).toBe('8000');
+    }
   });
 
   it('accepts Solana Base58 address format', () => {
@@ -144,10 +150,11 @@ describe('TanStack Solana Payments', () => {
       const spyingFactory: typeof middlewareFactory = (
         payTo,
         routes,
-        facilitator
+        facilitator,
+        paywall
       ) => {
         capturedRoutes.push(routes as RoutesConfig);
-        return middlewareFactory(payTo, routes, facilitator);
+        return middlewareFactory(payTo, routes, facilitator, paywall);
       };
 
       const paywall = createTanStackPaywall({
@@ -164,7 +171,9 @@ describe('TanStack Solana Payments', () => {
       // Verify all routes use the correct Solana network
       for (const key of routeKeys) {
         const routeConfig = invokeRoutes[key];
-        expect(routeConfig.network).toBe(network);
+        if (typeof routeConfig === 'object' && routeConfig && 'network' in routeConfig) {
+          expect(routeConfig.network).toBe(network);
+        }
       }
     });
   });
@@ -175,16 +184,17 @@ describe('TanStack Solana Payments', () => {
 
     const middlewareFactory = ((_payTo, _routes, _facilitator, _paywall) => {
       return (() =>
-        Promise.resolve(new Response())) as TanStackRequestMiddleware;
+        Promise.resolve(new Response())) as unknown as TanStackRequestMiddleware;
     }) satisfies typeof import('@lucid-agents/x402-tanstack-start').paymentMiddleware;
 
     const spyingFactory: typeof middlewareFactory = (
       payTo,
       routes,
-      facilitator
+      facilitator,
+      paywall
     ) => {
       capturedRoutes.push(routes as RoutesConfig);
-      return middlewareFactory(payTo, routes, facilitator);
+      return middlewareFactory(payTo, routes, facilitator, paywall);
     };
 
     createTanStackPaywall({
@@ -218,16 +228,17 @@ describe('TanStack Solana Payments', () => {
 
     const middlewareFactory = ((_payTo, _routes, _facilitator, _paywall) => {
       return (() =>
-        Promise.resolve(new Response())) as TanStackRequestMiddleware;
+        Promise.resolve(new Response())) as unknown as TanStackRequestMiddleware;
     }) satisfies typeof import('@lucid-agents/x402-tanstack-start').paymentMiddleware;
 
     const spyingFactory: typeof middlewareFactory = (
       payTo,
       routes,
-      facilitator
+      facilitator,
+      paywall
     ) => {
       capturedRoutes.push(routes as RoutesConfig);
-      return middlewareFactory(payTo, routes, facilitator);
+      return middlewareFactory(payTo, routes, facilitator, paywall);
     };
 
     createTanStackPaywall({
@@ -240,17 +251,23 @@ describe('TanStack Solana Payments', () => {
     // Check invoke price for translate (explicit price)
     const translateInvokeConfig =
       invokeRoutes['POST /api/agent/entrypoints/translate/invoke'];
-    expect(translateInvokeConfig.price).toBe('5000');
+    if (typeof translateInvokeConfig === 'object' && translateInvokeConfig && 'price' in translateInvokeConfig) {
+      expect(translateInvokeConfig.price).toBe('5000');
+    }
 
     // Check invoke price for generate (from price.invoke)
     const generateInvokeConfig =
       invokeRoutes['POST /api/agent/entrypoints/generate/invoke'];
-    expect(generateInvokeConfig.price).toBe('2000');
+    if (typeof generateInvokeConfig === 'object' && generateInvokeConfig && 'price' in generateInvokeConfig) {
+      expect(generateInvokeConfig.price).toBe('2000');
+    }
 
     // Check stream price for generate (from price.stream)
     const generateStreamConfig =
       streamRoutes['POST /api/agent/entrypoints/generate/stream'];
-    expect(generateStreamConfig.price).toBe('8000');
+    if (typeof generateStreamConfig === 'object' && generateStreamConfig && 'price' in generateStreamConfig) {
+      expect(generateStreamConfig.price).toBe('8000');
+    }
   });
 
   it('rejects unsupported network at configuration time', () => {

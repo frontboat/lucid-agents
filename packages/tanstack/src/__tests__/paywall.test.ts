@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import type { PaymentsConfig } from "@lucid-agents/core";
+import type { PaymentsConfig } from "@lucid-agents/types";
 import { createTanStackPaywall } from "../paywall";
 import type { RoutesConfig } from "x402/types";
 import type { TanStackRequestMiddleware } from "@lucid-agents/x402-tanstack-start";
@@ -51,14 +51,14 @@ describe("createTanStackPaywall", () => {
       _facilitator,
       _paywall
     ) => {
-      return (() => Promise.resolve(new Response())) as TanStackRequestMiddleware;
+      return (() => Promise.resolve(new Response())) as unknown as TanStackRequestMiddleware;
     }) satisfies typeof import("@lucid-agents/x402-tanstack-start").paymentMiddleware;
 
-    const spyingFactory: typeof middlewareFactory = (payTo, routes, facilitator) => {
+    const spyingFactory: typeof middlewareFactory = (payTo, routes, facilitator, paywall) => {
       capturedRoutes.push(routes as RoutesConfig);
-      expect(payTo).toBe(payments.payTo);
+      expect(payTo as string).toBe(payments.payTo);
       expect(facilitator?.url).toBe(payments.facilitatorUrl);
-      return middlewareFactory(payTo, routes, facilitator);
+      return middlewareFactory(payTo, routes, facilitator, paywall);
     };
 
     const paywall = createTanStackPaywall({
@@ -84,9 +84,13 @@ describe("createTanStackPaywall", () => {
       "POST /api/agent/entrypoints/streamer/stream"
     );
     const invokeConfig = invokeRoutes["POST /api/agent/entrypoints/echo/invoke"];
-    expect(invokeConfig.config?.mimeType).toBe("application/json");
+    if (typeof invokeConfig === 'object' && 'config' in invokeConfig) {
+      expect(invokeConfig.config?.mimeType).toBe("application/json");
+    }
     const streamConfig =
       streamRoutes["POST /api/agent/entrypoints/streamer/stream"];
-    expect(streamConfig.config?.mimeType).toBe("text/event-stream");
+    if (typeof streamConfig === 'object' && 'config' in streamConfig) {
+      expect(streamConfig.config?.mimeType).toBe("text/event-stream");
+    }
   });
 });

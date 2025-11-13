@@ -10,30 +10,6 @@
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "downlevelIteration": true,
-    "skipLibCheck": true,
-    "baseUrl": ".",
-    "paths": {
-      "@lucid-agents/types": [
-        "./types/src"
-      ],
-      "@lucid-agents/core": [
-        "./core/src"
-      ],
-      "@lucid-agents/payments": [
-        "./payments/src"
-      ],
-      "@lucid-agents/identity": [
-        "./identity/src"
-      ],
-      "@lucid-agents/hono": [
-        "./hono/src"
-      ],
-      "@lucid-agents/tanstack": [
-        "./tanstack/src"
-      ],
-      "@lucid-agents/cli": [
-        "./cli/src"
-      ]
-    }
+    "skipLibCheck": true
   }
 }

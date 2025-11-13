@@ -29,7 +29,8 @@ Simplify package names and introduce types package
 - Explicit type contracts - all shared types in @lucid-agents/types
 - Better IDE support and type inference
 - Cleaner package naming without redundant "agent-kit" prefix
-- CLI binary renamed to `lucid-agent`
+- Standardized TypeScript configuration across all packages
+- Consistent type-checking for all published packages
 
 **Migration:**
 
@@ -57,7 +58,14 @@ bunx @lucid-agents/create-agent-kit my-agent
 # After
 bunx @lucid-agents/cli my-agent
 # or
-bunx lucid-agent my-agent
+bunx create-agent-kit my-agent
 ```
+
+**TypeScript Configuration:**
+
+All published packages now:
+- Extend a shared base TypeScript configuration for consistency
+- Include `type-check` script for CI validation
+- Use simplified type-check command (`tsc -p tsconfig.json --noEmit`)
 
 **Note:** Old package names will be deprecated via npm after this release.
