@@ -22,93 +22,9 @@
         "prettier": "^3.0.0",
       },
     },
-    "packages/agent-kit": {
-      "name": "@lucid-agents/agent-kit",
-      "version": "1.4.0",
-      "dependencies": {
-        "@ax-llm/ax": "^14.0.37",
-        "@ax-llm/ax-tools": "^14.0.37",
-        "@lucid-agents/agent-kit-identity": "workspace:*",
-        "@lucid-agents/agent-kit-payments": "workspace:*",
-        "@lucid-dreams/agent-auth": "latest",
-        "@lucid-dreams/client": "latest",
-        "hono": "catalog:",
-        "viem": "^2.38.5",
-        "x402": "^0.7.1",
-        "x402-fetch": "catalog:",
-        "zod": "catalog:",
-      },
-      "devDependencies": {
-        "@lucid-agents/eslint-config": "workspace:*",
-        "@lucid-agents/prettier-config": "workspace:*",
-        "tsup": "catalog:",
-        "typescript": "catalog:",
-      },
-    },
-    "packages/agent-kit-hono": {
-      "name": "@lucid-agents/agent-kit-hono",
-      "version": "0.3.0",
-      "dependencies": {
-        "@lucid-agents/agent-kit": "workspace:*",
-        "@lucid-agents/agent-kit-payments": "workspace:*",
-        "hono": "catalog:",
-        "x402": "^0.7.1",
-        "x402-hono": "^0.7.1",
-        "zod": "catalog:",
-      },
-      "devDependencies": {
-        "tsup": "catalog:",
-        "typescript": "catalog:",
-      },
-    },
-    "packages/agent-kit-identity": {
-      "name": "@lucid-agents/agent-kit-identity",
-      "version": "1.4.0",
-      "dependencies": {
-        "viem": "^2.38.1",
-      },
-      "devDependencies": {
-        "@lucid-agents/eslint-config": "workspace:*",
-        "@lucid-agents/prettier-config": "workspace:*",
-        "tsup": "^8.5.0",
-        "typescript": "^5.9.2",
-      },
-    },
-    "packages/agent-kit-payments": {
-      "name": "@lucid-agents/agent-kit-payments",
-      "version": "1.1.0",
-      "dependencies": {
-        "@ax-llm/ax": "catalog:",
-        "@lucid-agents/agent-kit": "workspace:*",
-        "@lucid-dreams/agent-auth": "latest",
-        "viem": "^2.38.5",
-        "x402": "^0.7.1",
-        "x402-fetch": "catalog:",
-        "zod": "catalog:",
-      },
-      "devDependencies": {
-        "tsup": "catalog:",
-        "typescript": "catalog:",
-      },
-    },
-    "packages/agent-kit-tanstack": {
-      "name": "@lucid-agents/agent-kit-tanstack",
-      "version": "0.3.0",
-      "dependencies": {
-        "@lucid-agents/agent-kit": "workspace:*",
-        "@lucid-agents/agent-kit-payments": "workspace:*",
-        "@lucid-agents/x402-tanstack-start": "workspace:*",
-        "viem": "^2.21.26",
-        "x402": "catalog:",
-      },
-      "devDependencies": {
-        "tsup": "catalog:",
-        "typescript": "catalog:",
-      },
-    },
-    "packages/create-agent-kit": {
-      "name": "@lucid-agents/create-agent-kit",
-      "version": "1.4.0",
+    "packages/cli": {
+      "name": "@lucid-agents/cli",
+      "version": "1.4.2",
       "bin": {
         "create-agent-kit": "dist/index.js",
       },
@@ -121,13 +37,114 @@
         "typescript": "^5.9.2",
       },
     },
+    "packages/core": {
+      "name": "@lucid-agents/core",
+      "version": "1.4.2",
+      "dependencies": {
+        "@ax-llm/ax": "^14.0.37",
+        "@ax-llm/ax-tools": "^14.0.37",
+        "@lucid-agents/identity": "workspace:*",
+        "@lucid-agents/payments": "workspace:*",
+        "@lucid-agents/types": "workspace:*",
+        "@lucid-dreams/agent-auth": "latest",
+        "@lucid-dreams/client": "latest",
+        "hono": "catalog:",
+        "viem": "^2.38.5",
+        "x402": "^0.7.1",
+        "x402-fetch": "catalog:",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@lucid-agents/eslint-config": "workspace:*",
+        "@lucid-agents/hono": "workspace:*",
+        "@lucid-agents/prettier-config": "workspace:*",
+        "tsup": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
     "packages/eslint-config": {
       "name": "@lucid-agents/eslint-config",
       "version": "1.0.0",
     },
+    "packages/hono": {
+      "name": "@lucid-agents/hono",
+      "version": "0.3.2",
+      "dependencies": {
+        "@lucid-agents/core": "workspace:*",
+        "@lucid-agents/payments": "workspace:*",
+        "@lucid-agents/types": "workspace:*",
+        "hono": "catalog:",
+        "x402": "^0.7.1",
+        "x402-hono": "^0.7.1",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "tsup": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
+    "packages/identity": {
+      "name": "@lucid-agents/identity",
+      "version": "1.4.2",
+      "dependencies": {
+        "viem": "^2.38.1",
+      },
+      "devDependencies": {
+        "@lucid-agents/eslint-config": "workspace:*",
+        "@lucid-agents/prettier-config": "workspace:*",
+        "tsup": "^8.5.0",
+        "typescript": "^5.9.2",
+      },
+    },
+    "packages/payments": {
+      "name": "@lucid-agents/payments",
+      "version": "1.1.2",
+      "dependencies": {
+        "@ax-llm/ax": "catalog:",
+        "@lucid-agents/types": "workspace:*",
+        "@lucid-dreams/agent-auth": "latest",
+        "viem": "^2.38.5",
+        "x402": "^0.7.1",
+        "x402-fetch": "catalog:",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "tsup": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
     "packages/prettier-config": {
       "name": "@lucid-agents/prettier-config",
       "version": "1.0.0",
+    },
+    "packages/tanstack": {
+      "name": "@lucid-agents/tanstack",
+      "version": "0.3.2",
+      "dependencies": {
+        "@lucid-agents/core": "workspace:*",
+        "@lucid-agents/payments": "workspace:*",
+        "@lucid-agents/types": "workspace:*",
+        "@lucid-agents/x402-tanstack-start": "workspace:*",
+        "viem": "^2.21.26",
+        "x402": "catalog:",
+      },
+      "devDependencies": {
+        "tsup": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
+    "packages/types": {
+      "name": "@lucid-agents/types",
+      "version": "1.0.0",
+      "devDependencies": {
+        "tsup": "catalog:",
+        "typescript": "catalog:",
+        "x402": "catalog:",
+        "zod": "catalog:",
+      },
+      "peerDependencies": {
+        "zod": "^4.0.0",
+      },
     },
     "packages/x402-tanstack-start": {
       "name": "@lucid-agents/x402-tanstack-start",
@@ -357,21 +374,23 @@
 
     "@lit/reactive-element": ["@lit/reactive-element@2.1.1", "", { "dependencies": { "@lit-labs/ssr-dom-shim": "^1.4.0" } }, "sha512-N+dm5PAYdQ8e6UlywyyrgI2t++wFGXfHx+dSJ1oBrg6FAxUj40jId++EaRm80MKX5JnlH1sBsyZ5h0bcZKemCg=="],
 
-    "@lucid-agents/agent-kit": ["@lucid-agents/agent-kit@workspace:packages/agent-kit"],
+    "@lucid-agents/cli": ["@lucid-agents/cli@workspace:packages/cli"],
 
-    "@lucid-agents/agent-kit-hono": ["@lucid-agents/agent-kit-hono@workspace:packages/agent-kit-hono"],
-
-    "@lucid-agents/agent-kit-identity": ["@lucid-agents/agent-kit-identity@workspace:packages/agent-kit-identity"],
-
-    "@lucid-agents/agent-kit-payments": ["@lucid-agents/agent-kit-payments@workspace:packages/agent-kit-payments"],
-
-    "@lucid-agents/agent-kit-tanstack": ["@lucid-agents/agent-kit-tanstack@workspace:packages/agent-kit-tanstack"],
-
-    "@lucid-agents/create-agent-kit": ["@lucid-agents/create-agent-kit@workspace:packages/create-agent-kit"],
+    "@lucid-agents/core": ["@lucid-agents/core@workspace:packages/core"],
 
     "@lucid-agents/eslint-config": ["@lucid-agents/eslint-config@workspace:packages/eslint-config"],
 
+    "@lucid-agents/hono": ["@lucid-agents/hono@workspace:packages/hono"],
+
+    "@lucid-agents/identity": ["@lucid-agents/identity@workspace:packages/identity"],
+
+    "@lucid-agents/payments": ["@lucid-agents/payments@workspace:packages/payments"],
+
     "@lucid-agents/prettier-config": ["@lucid-agents/prettier-config@workspace:packages/prettier-config"],
+
+    "@lucid-agents/tanstack": ["@lucid-agents/tanstack@workspace:packages/tanstack"],
+
+    "@lucid-agents/types": ["@lucid-agents/types@workspace:packages/types"],
 
     "@lucid-agents/x402-tanstack-start": ["@lucid-agents/x402-tanstack-start@workspace:packages/x402-tanstack-start"],
 

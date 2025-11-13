@@ -1,7 +1,12 @@
 {
-  "name": "@lucid-agents/x402-tanstack-start",
-  "version": "0.1.0",
-  "description": "TanStack Start middleware for the x402 payment protocol",
+  "name": "@lucid-agents/tanstack",
+  "version": "0.3.2",
+  "description": "TanStack Start adapter for Lucid agent runtime",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/daydreamsai/lucid-agents",
+    "directory": "packages/tanstack"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -23,12 +28,15 @@
   },
   "scripts": {
     "build": "tsup",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "type-check": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@solana/kit": "^2.1.1",
-    "@tanstack/react-start": "^1.134.13",
-    "viem": "catalog:",
+    "@lucid-agents/core": "workspace:*",
+    "@lucid-agents/payments": "workspace:*",
+    "@lucid-agents/types": "workspace:*",
+    "@lucid-agents/x402-tanstack-start": "workspace:*",
+    "viem": "^2.21.26",
     "x402": "catalog:"
   },
   "devDependencies": {

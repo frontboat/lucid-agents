@@ -10,15 +10,6 @@
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "downlevelIteration": true,
-    "skipLibCheck": true,
-    "baseUrl": ".",
-    "paths": {
-      "@lucid-agents/agent-kit": ["./agent-kit/src"],
-      "@lucid-agents/agent-kit-payments": ["./agent-kit-payments/src"],
-      "@lucid-agents/agent-kit-hono": ["./agent-kit-hono/src"],
-      "@lucid-agents/agent-kit-tanstack": ["./agent-kit-tanstack/src"],
-      "@lucid-agents/agent-kit-identity": ["./agent-kit-identity/src"],
-      "@lucid-agents/create-agent-kit": ["./create-agent-kit/src"]
-    }
+    "skipLibCheck": true
   }
 }
