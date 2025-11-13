@@ -6,7 +6,7 @@ This directory contains the base project structure for generating Hono-based age
 
 ```
 hono/
-├── package.json         # Base dependencies (Hono, agent-kit, etc.)
+├── package.json         # Base dependencies (Hono, core, etc.)
 ├── tsconfig.json        # TypeScript configuration
 ├── src/
 │   ├── index.ts         # Bun server entry point

@@ -22,7 +22,7 @@ Minimal agent with echo entrypoint. Best starting point for custom agents.
 
 **Best for:**
 
-- Learning agent-kit fundamentals
+- Learning core fundamentals
 - Building custom agents from scratch
 - Minimal boilerplate
 
@@ -77,7 +77,7 @@ All configuration goes into `.env` - easy to change later without editing code.
 
 ### Adapter System
 
-Framework-specific assets live under `packages/create-agent-kit/adapters/<adapter>`.
+Framework-specific assets live under `packages/cli/adapters/<adapter>`.
 When you select an adapter, the CLI copies the corresponding runtime framework files:
 
 **Available Adapters:**
@@ -345,8 +345,8 @@ Note: While the CLI works with Node/npx, generated projects require Bun.
 
 ## Related Packages
 
-- [`@lucid-agents/core`](../agent-kit/README.md) - Core agent runtime
-- [`@lucid-agents/identity`](../agent-kit-identity/README.md) - ERC-8004 identity
+- [`@lucid-agents/core`](../core/README.md) - Core agent runtime
+- [`@lucid-agents/identity`](../@lucid-agents/identity/README.md) - ERC-8004 identity
 
 ## Contributing
 

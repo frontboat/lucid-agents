@@ -229,7 +229,7 @@ The package supports multiple EVM-compatible chains. Set `CHAIN_ID` and `RPC_URL
 See the [`examples/`](./examples) directory for complete examples:
 
 - [`quick-start.ts`](./examples/quick-start.ts) - Simple registration with environment variables
-- [`full-integration.ts`](./examples/full-integration.ts) - Full integration with agent-kit
+- [`full-integration.ts`](./examples/full-integration.ts) - Full integration with core
 - [`test-clients.ts`](./examples/test-clients.ts) - Testing all three registry clients (identity, reputation, validation)
 
 ## API Reference
@@ -385,4 +385,4 @@ MIT
 
 - [ERC-8004 Specification](https://eips.ethereum.org/EIPS/eip-8004)
 - [ERC-8004 Reference Implementation](https://github.com/lucid-dreams-ai/erc-8004-contracts)
-- [Agent Kit Documentation](https://github.com/lucid-dreams-ai/lucid-fullstack/tree/main/packages/agent-kit)
+- [Agent Kit Documentation](https://github.com/lucid-dreams-ai/lucid-fullstack/tree/main/packages/core)

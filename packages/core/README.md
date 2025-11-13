@@ -2,7 +2,7 @@
 
 `@lucid-agents/core` is the core runtime for building AI agents with typed entrypoints, discovery endpoints, monetization hooks, and trust metadata. It provides the shared runtime logic used by adapter packages like `@lucid-agents/hono` and `@lucid-agents/tanstack`.
 
-**Note:** For most use cases, you'll want to use one of the adapter packages (`agent-kit-hono` or `agent-kit-tanstack`) rather than importing from this core package directly.
+**Note:** For most use cases, you'll want to use one of the adapter packages (`@lucid-agents/hono` or `@lucid-agents/tanstack`) rather than importing from this core package directly.
 
 ## Highlights
 
@@ -42,7 +42,7 @@ Subpath exports (shared across adapters):
 
 ### Core Runtime
 
-This package provides the core runtime logic. Adapter packages like `agent-kit-hono` and `agent-kit-tanstack` wrap this runtime with framework-specific implementations.
+This package provides the core runtime logic. Adapter packages like `@lucid-agents/hono` and `@lucid-agents/tanstack` wrap this runtime with framework-specific implementations.
 
 The runtime manages:
 
@@ -221,7 +221,7 @@ Every agent app exposes the following for free:
 
 ## Configuration & Environment
 
-`agent-kit` keeps configuration centralized so every helper resolves the same values.
+`core` keeps configuration centralized so every helper resolves the same values.
 
 - Defaults live in `src/config.ts` (facilitator, pay-to address, network, wallet API).
 - Environment variables override defaults automatically: `FACILITATOR_URL`, `PAYMENTS_RECEIVABLE_ADDRESS`, `NETWORK`, `DEFAULT_PRICE`, `LUCID_API_URL`/`VITE_API_URL`, `AGENT_WALLET_MAX_PAYMENT_BASE_UNITS`, and `AGENT_WALLET_MAX_PAYMENT_USDC`.
@@ -344,7 +344,7 @@ The package also exports lower-level helpers for advanced use cases:
 - `signAgentDomainProof({ domain, address, chainId, signer })` — manually sign domain ownership proofs.
 - `buildTrustConfigFromIdentity(record, { signature, chainId, namespace, trustOverrides })` — convert registry records into `TrustConfig`.
 
-See [`@lucid-agents/identity` documentation](../agent-kit-identity/README.md) for complete examples and API reference.
+See [`@lucid-agents/identity` documentation](../@lucid-agents/identity/README.md) for complete examples and API reference.
 
 ## x402 + AxFlow utilities
 

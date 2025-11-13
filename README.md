@@ -55,10 +55,10 @@ Get your first monetized AI agent running in minutes.
 
 ```bash
 # Interactive mode - CLI guides you through all options
-bunx @lucid-agents/create-agent-kit my-agent
+bunx @lucid-agents/cli my-agent
 
 # Or use inline configuration for faster setup
-bunx @lucid-agents/create-agent-kit my-agent \
+bunx @lucid-agents/cli my-agent \
   --adapter=hono \
   --template=axllm \
   --AGENT_NAME="My AI Agent" \
@@ -132,7 +132,7 @@ Lucid Agents is a TypeScript monorepo built for multi-runtime agent deployment.
          ┌─────────────────┴─────────────────┐
          │                                   │
     ┌────▼──────────┐              ┌────────▼────────┐
-    │  agent-kit    │              │  agent-kit-     │
+    │     core      │              │   payments      │
     │  (core)       │◄─────────────┤  identity       │
     │               │              │  (ERC-8004)     │
     └───────────────┘              └─────────────────┘
@@ -143,29 +143,29 @@ Lucid Agents is a TypeScript monorepo built for multi-runtime agent deployment.
 ```
 /
 ├── packages/
-│   ├── agent-kit/              # Core runtime and types
+│   ├── core/              # Core runtime and types
 │   │   ├── src/core/           # Agent runtime, manifest generation
 │   │   ├── src/http/           # HTTP utilities
 │   │   └── src/axllm/          # LLM integration helpers
 │   │
-│   ├── agent-kit-hono/         # Hono HTTP server adapter
+│   ├── hono/         # Hono HTTP server adapter
 │   │   ├── src/app.ts          # createAgentApp() for Hono
 │   │   └── src/paywall.ts      # x402 payment middleware
 │   │
-│   ├── agent-kit-tanstack/     # TanStack Start adapter
+│   ├── tanstack/     # TanStack Start adapter
 │   │   ├── src/runtime.ts      # createTanStackRuntime()
 │   │   └── src/paywall.ts      # TanStack payment middleware
 │   │
-│   ├── agent-kit-identity/     # ERC-8004 identity toolkit
+│   ├── identity/     # ERC-8004 identity toolkit
 │   │   ├── src/init.ts         # createAgentIdentity()
 │   │   ├── src/registries/     # Identity/Reputation/Validation clients
 │   │   └── src/utils/          # Signature helpers, CAIP-10
 │   │
-│   ├── agent-kit-payments/     # x402 payment utilities
+│   ├── payments/     # x402 payment utilities
 │   │   ├── src/payments.ts     # Multi-network payment config
 │   │   └── src/x402.ts         # x402 protocol helpers
 │   │
-│   └── create-agent-kit/       # CLI scaffolding tool
+│   └── cli/       # CLI scaffolding tool
 │       ├── src/index.ts        # Interactive CLI
 │       ├── adapters/           # Runtime frameworks (hono, tanstack, next)
 │       └── templates/          # Project templates (blank, axllm, identity)
@@ -279,16 +279,16 @@ const payments = paymentsFromEnv();
 
 ### CLI Tool
 
-#### [`@lucid-agents/create-agent-kit`](packages/cli/README.md)
+#### [`@lucid-agents/cli`](packages/cli/README.md)
 
 CLI for scaffolding new agent projects with templates and interactive configuration.
 
 ```bash
 # Interactive mode
-bunx @lucid-agents/create-agent-kit
+bunx @lucid-agents/cli
 
 # With options
-bunx @lucid-agents/create-agent-kit my-agent \
+bunx @lucid-agents/cli my-agent \
   --adapter=tanstack-ui \
   --template=axllm \
   --non-interactive
@@ -418,7 +418,7 @@ bun run build:packages
 
 ```bash
 # Work on a specific package
-cd packages/agent-kit
+cd packages/core
 
 # Build this package
 bun run build
