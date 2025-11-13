@@ -8,26 +8,34 @@ The SDK is organized into four architectural layers:
 
 ```mermaid
 graph TB
+    subgraph "Layer 0: Types"
+        types["@lucid-agents/types<br/>Shared type definitions"]
+    end
+
     subgraph "Layer 1: Extensions"
-        identity["@lucid-agents/agent-kit-identity<br/>ERC-8004 identity & trust"]
-        payments["@lucid-agents/agent-kit-payments<br/>x402 bi-directional payments"]
+        identity["@lucid-agents/identity<br/>ERC-8004 identity & trust"]
+        payments["@lucid-agents/payments<br/>x402 bi-directional payments"]
         future["Future extensions<br/>(wallet, monitoring, etc.)"]
     end
 
     subgraph "Layer 2: Core"
-        core["@lucid-agents/agent-kit<br/>Core runtime & types"]
+        core["@lucid-agents/core<br/>Core runtime"]
     end
 
     subgraph "Layer 3: Adapters"
-        hono["@lucid-agents/agent-kit-hono<br/>Hono framework adapter"]
-        tanstack["@lucid-agents/agent-kit-tanstack<br/>TanStack Start adapter"]
+        hono["@lucid-agents/hono<br/>Hono framework adapter"]
+        tanstack["@lucid-agents/tanstack<br/>TanStack Start adapter"]
         express["Future: Express adapter"]
     end
 
     subgraph "Layer 4: Developer Tools"
-        cli["@lucid-agents/create-agent-kit<br/>CLI scaffolding tool"]
+        cli["@lucid-agents/cli<br/>CLI scaffolding tool"]
         templates["Templates<br/>(blank, axllm, identity, etc.)"]
     end
+
+    types --> identity
+    types --> payments
+    types --> core
 
     core --> identity
     core --> payments
@@ -55,33 +63,42 @@ graph TB
 
 ```mermaid
 graph LR
+    subgraph "Types Foundation"
+        types[types]
+    end
+
     subgraph "Extensions (Independent)"
-        identity[agent-kit-identity]
-        payments[agent-kit-payments]
+        identity[identity]
+        payments[payments]
     end
 
     subgraph "Core Runtime"
-        core[agent-kit]
+        core[core]
     end
 
     subgraph "Framework Adapters"
-        hono[agent-kit-hono]
-        tanstack[agent-kit-tanstack]
+        hono[hono]
+        tanstack[tanstack]
     end
 
     subgraph "Developer Tools"
-        cli[create-agent-kit]
+        cli[cli]
     end
 
-    core --> payments
-    core --> identity
+    types --> identity
+    types --> payments
+    types --> core
 
-    hono --> core
-    tanstack --> core
+    payments --> core
+    identity --> core
 
-    cli --> hono
-    cli --> tanstack
+    core --> hono
+    core --> tanstack
 
+    hono --> cli
+    tanstack --> cli
+
+    style types fill:#4fc3f7
     style identity fill:#81c784
     style payments fill:#81c784
     style core fill:#ffb74d
@@ -89,6 +106,8 @@ graph LR
     style tanstack fill:#ba68c8
     style cli fill:#e57373
 ```
+
+Note: Dependencies are one-directional. @lucid-agents/core imports from extensions (both types and runtime functions). All packages import shared types from @lucid-agents/types. This pure DAG structure eliminates circular dependencies.
 
 ## Layer 1: Extensions
 
@@ -261,11 +280,12 @@ Packages must build in dependency order:
 ```mermaid
 graph LR
     A[1. x402-tanstack-start] --> B[2. agent-kit-identity]
-    B --> C[3. agent-kit-payments]
-    C --> D[4. agent-kit]
-    D --> E[5. agent-kit-hono]
-    D --> F[6. agent-kit-tanstack]
-    E --> G[7. create-agent-kit]
+    A --> C[2. agent-kit-payments]
+    B --> D[3. agent-kit]
+    C --> D
+    D --> E[4. agent-kit-hono]
+    D --> F[4. agent-kit-tanstack]
+    E --> G[5. create-agent-kit]
     F --> G
 
     style A fill:#b39ddb
@@ -276,6 +296,8 @@ graph LR
     style F fill:#ce93d8
     style G fill:#ef9a9a
 ```
+
+Note: agent-kit-payments is now a leaf package that can build before agent-kit, eliminating the previous circular dependency.
 
 ## Package Responsibilities
 
@@ -310,6 +332,57 @@ graph TB
 ```
 
 Extensions are independent modules that core can optionally use. Neither depends on the other.
+
+## Types Package
+
+`@lucid-agents/types` is the foundational package containing all shared type definitions.
+
+### Key Characteristics
+
+- **Zero dependencies** on other @lucid-agents packages
+- **Only external dependencies**: zod, x402
+- **Pure TypeScript types** - no runtime code
+- **Single source of truth** for type contracts
+
+### Contains
+
+- `AgentMeta`, `AgentContext`, `Usage` - Core agent types
+- `EntrypointDef`, `EntrypointPrice`, `EntrypointHandler` - Entrypoint types
+- `PaymentsConfig`, `SolanaAddress` - Payment types
+- Stream types for SSE responses
+
+### Architecture Benefits
+
+All packages import from @lucid-agents/types, creating a clean dependency DAG:
+
+```mermaid
+graph TD
+    types[@lucid-agents/types]
+    identity[@lucid-agents/identity]
+    payments[@lucid-agents/payments]
+    core[@lucid-agents/core]
+    hono[@lucid-agents/hono]
+    tanstack[@lucid-agents/tanstack]
+    cli[@lucid-agents/cli]
+
+    types --> identity
+    types --> payments
+    types --> core
+    identity --> core
+    payments --> core
+    core --> hono
+    core --> tanstack
+    hono --> cli
+    tanstack --> cli
+```
+
+**Benefits:**
+
+- Zero circular dependencies (pure DAG)
+- Explicit type contracts
+- Better IDE support and type inference
+- Smaller bundles (types erased at compile time)
+- Easy to maintain and evolve
 
 ## Future Roadmap
 
