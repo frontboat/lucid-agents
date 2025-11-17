@@ -133,14 +133,14 @@ const extractTypedDataPayload = (
   }
 
   const record = payload as Record<string, unknown>;
-  const candidate = record.typed_data ?? record.typedData;
+  const candidate = record.typedData;
   if (!candidate || typeof candidate !== "object") {
     return null;
   }
 
   const typed = candidate as Record<string, unknown>;
   if (
-    typeof typed.primary_type !== "string" ||
+    typeof typed.primaryType !== "string" ||
     !typed.types ||
     typeof typed.types !== "object" ||
     !typed.domain ||
@@ -152,7 +152,7 @@ const extractTypedDataPayload = (
   }
 
   return {
-    primary_type: typed.primary_type,
+    primaryType: typed.primaryType,
     types: typed.types as TypedDataPayload["types"],
     domain: typed.domain as TypedDataPayload["domain"],
     message: typed.message as TypedDataPayload["message"],

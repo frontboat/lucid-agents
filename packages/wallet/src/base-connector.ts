@@ -107,6 +107,10 @@ const resolveChallengeMessage = (
 };
 
 export const stableJsonStringify = (value: unknown): string => {
+  if (value === undefined) {
+    return "null";
+  }
+
   if (value === null || typeof value !== "object") {
     if (typeof value === "bigint") {
       return JSON.stringify(value.toString());
@@ -115,7 +119,9 @@ export const stableJsonStringify = (value: unknown): string => {
   }
 
   if (Array.isArray(value)) {
-    const mapped = value.map((item) => stableJsonStringify(item));
+    const mapped = value.map((item) =>
+      item === undefined ? "null" : stableJsonStringify(item)
+    );
     return `[${mapped.join(",")}]`;
   }
 

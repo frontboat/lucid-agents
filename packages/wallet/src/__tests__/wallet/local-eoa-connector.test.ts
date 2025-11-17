@@ -69,7 +69,7 @@ describe('LocalEoaWalletConnector', () => {
   it('delegates to signTypedData when typed payload provided', async () => {
     let typedDataInvoked = false;
     const typedPayload = {
-      primary_type: 'Mail',
+      primaryType: 'Mail',
       types: {
         EIP712Domain: [{ name: 'name', type: 'string' }],
         Mail: [
@@ -86,7 +86,7 @@ describe('LocalEoaWalletConnector', () => {
         throw new Error('signMessage should not be called for typed data');
       },
       async signTypedData(payload) {
-        typedDataInvoked = payload.primary_type === 'Mail';
+        typedDataInvoked = payload.primaryType === 'Mail';
         return '0xtyped';
       },
     };
@@ -95,7 +95,7 @@ describe('LocalEoaWalletConnector', () => {
 
     const signature = await connector.signChallenge({
       ...baseChallenge,
-      payload: { typed_data: typedPayload },
+      payload: { typedData: typedPayload },
     });
 
     expect(signature).toBe('0xtyped');

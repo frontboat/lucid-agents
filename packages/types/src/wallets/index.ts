@@ -81,7 +81,7 @@ export interface LocalEoaSigner {
   signMessage(message: string | Uint8Array): Promise<string>;
   signTypedData?(payload: {
     domain: Record<string, unknown>;
-    primary_type: string;
+    primaryType: string;
     types: Record<string, Array<{ name: string; type: string }>>;
     message: Record<string, unknown>;
   }): Promise<string>;
@@ -106,7 +106,7 @@ export interface AgentChallengeResponse {
 
 export type TypedDataPayload = {
   domain: Record<string, unknown>;
-  primary_type: string;
+  primaryType: string;
   types: Record<string, Array<{ name: string; type: string }>>;
   message: Record<string, unknown>;
 };

@@ -13,8 +13,7 @@ type TypedDataPayload = {
   domain?: Record<string, unknown>;
   types?: Record<string, Array<{ name: string; type: string }>>;
   message?: Record<string, unknown>;
-  primaryType?: string;
-  primary_type?: string;
+  primaryType: string;
 };
 
 type RuntimeSigner = {
@@ -116,15 +115,14 @@ function inferChainId(network?: string): number | undefined {
 }
 
 function normalizeTypedData(input: TypedDataPayload) {
-  const primaryType = input.primary_type ?? input.primaryType;
-  if (!primaryType) {
+  if (!input.primaryType) {
     throw new Error('[agent-kit] Typed data missing primaryType');
   }
   return {
     domain: input.domain ?? {},
     types: input.types ?? {},
     message: input.message ?? {},
-    primary_type: primaryType,
+    primaryType: input.primaryType,
   };
 }
 
@@ -208,13 +206,13 @@ function createRuntimeSigner(opts: {
       }
 
       // Create a challenge-like payload for typed data signing
-      // The payload should have typed_data or typedData field for typed data signing
+      // The payload should have typedData field for typed data signing
       const challengePayload = {
-        typed_data: {
+        typedData: {
           domain: typedData.domain,
           types: typedData.types,
           message: typedData.message,
-          primary_type: typedData.primary_type,
+          primaryType: typedData.primaryType,
         },
       };
 

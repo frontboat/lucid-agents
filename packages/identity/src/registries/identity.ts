@@ -890,17 +890,17 @@ export async function makeViemClientsFromWallet(
                     domain: params.domain,
                     types: params.types,
                     message: params.message,
-                    primary_type: params.primaryType ?? params.primary_type,
+                    primaryType: params.primaryType,
                   };
                   return await localSigner.signTypedData(typedPayload);
                 }
                 // Fallback to challenge-based signing
                 const challengePayload = {
-                  typed_data: {
+                  typedData: {
                     domain: params.domain,
                     types: params.types,
                     message: params.message,
-                    primary_type: params.primaryType ?? params.primary_type,
+                    primaryType: params.primaryType,
                   },
                 };
                 const challenge = {

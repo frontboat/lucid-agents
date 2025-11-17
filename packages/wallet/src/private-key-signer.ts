@@ -23,11 +23,11 @@ export const createPrivateKeySigner = (privateKey: string): LocalEoaSigner => {
     },
     async signTypedData(payload: TypedDataPayload) {
       return account.signTypedData({
-        domain: payload.domain as Record<string, unknown>,
-        message: payload.message as Record<string, unknown>,
-        types: payload.types as never,
-        primaryType: payload.primary_type as never,
-      } as never);
+        domain: payload.domain,
+        message: payload.message,
+        types: payload.types,
+        primaryType: payload.primaryType,
+      });
     },
     async getAddress() {
       return account.address;
