@@ -10,18 +10,15 @@ import {
 import type {
   AgentWalletFactoryOptions,
   AgentWalletHandle,
-  AgentWalletKind,
   LocalWalletOptions,
   LucidWalletOptions,
   WalletConnector,
 } from '@lucid-agents/types/wallets';
 
-export type { AgentWalletHandle, AgentWalletKind };
-
 export const createAgentWallet = (
-  options: AgentWalletFactoryOptions,
+  options: AgentWalletFactoryOptions
 ): AgentWalletHandle => {
-  if (options.type === "local") {
+  if (options.type === 'local') {
     return buildLocalWallet(options);
   }
   return buildLucidWallet(options);
@@ -34,50 +31,47 @@ const buildLocalWallet = (options: LocalWalletOptions): AgentWalletHandle => {
 
   if (!signer) {
     throw new Error(
-      "Local wallet configuration requires either a signer or privateKey",
+      'Local wallet configuration requires either a signer or privateKey'
     );
   }
 
   const connector = new LocalEoaWalletConnector(
-    resolveLocalConnectorOptions(options, signer),
+    resolveLocalConnectorOptions(options, signer)
   );
 
   return {
-    kind: "local",
+    kind: 'local',
     connector,
   };
 };
 
 const resolveLocalConnectorOptions = (
   options: LocalWalletOptions,
-  signer: LocalEoaWalletConnectorOptions["signer"],
+  signer: LocalEoaWalletConnectorOptions['signer']
 ): LocalEoaWalletConnectorOptions => ({
   signer,
   address: options.address ?? null,
   caip2: options.caip2 ?? null,
   chain: options.chain ?? null,
   chainType: options.chainType ?? null,
-  provider:
-    options.provider ?? (options.privateKey ? "local" : undefined),
+  provider: options.provider ?? (options.privateKey ? 'local' : undefined),
   label: options.label ?? null,
 });
 
-const buildLucidWallet = (
-  options: LucidWalletOptions,
-): AgentWalletHandle => {
+const buildLucidWallet = (options: LucidWalletOptions): AgentWalletHandle => {
   const connector = new ServerOrchestratorWalletConnector(
-    resolveLucidConnectorOptions(options),
+    resolveLucidConnectorOptions(options)
   );
 
   return {
-    kind: "lucid",
+    kind: 'lucid',
     connector,
-    setAccessToken: (token) => connector.setAccessToken(token),
+    setAccessToken: token => connector.setAccessToken(token),
   };
 };
 
 const resolveLucidConnectorOptions = (
-  options: LucidWalletOptions,
+  options: LucidWalletOptions
 ): ServerOrchestratorWalletConnectorOptions => ({
   baseUrl: options.baseUrl,
   agentRef: options.agentRef,
@@ -86,4 +80,3 @@ const resolveLucidConnectorOptions = (
   accessToken: options.accessToken ?? null,
   authorizationContext: options.authorizationContext,
 });
-

@@ -3,9 +3,11 @@
  * Handles peer feedback system for agent reputation
  */
 
+import type { Hex, SignerWalletClient } from '@lucid-agents/wallet';
+import { normalizeAddress } from '@lucid-agents/wallet';
+
 import { REPUTATION_REGISTRY_ABI } from '../abi/types';
-import type { Hex, SignerWalletClient } from '../utils';
-import { normalizeAddress, signFeedbackAuth } from '../utils';
+import { signFeedbackAuth } from './erc8004-signatures';
 import type { PublicClientLike, WalletClientLike } from './identity';
 
 export type ReputationRegistryClientOptions<
@@ -213,6 +215,7 @@ export function createReputationRegistryClient<
           chainId,
           expiry,
           indexLimit,
+          identityRegistry: identityRegistryAddress,
         });
       }
 

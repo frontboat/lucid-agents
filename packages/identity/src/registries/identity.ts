@@ -6,26 +6,20 @@ import type {
   AgentWalletHandle,
   LocalEoaSigner,
 } from '@lucid-agents/types/wallets';
+import type { Hex } from '@lucid-agents/wallet';
+import { normalizeAddress, toCaip10, ZERO_ADDRESS } from '@lucid-agents/wallet';
 
-import type { Hex } from '../utils';
-import {
-  normalizeAddress,
-  normalizeDomain,
-  toCaip10,
-  ZERO_ADDRESS,
-} from '../utils';
-export { toCaip10 } from '../utils';
+import { normalizeDomain } from '../utils';
+import { signDomainProof } from './erc8004-signatures';
+
+export { toCaip10 } from '@lucid-agents/wallet';
 
 import type {
   IdentityRegistryReadFunctionName,
   IdentityRegistryWriteFunctionName,
 } from '../abi/types';
 import { IDENTITY_REGISTRY_ABI } from '../abi/types';
-import {
-  DEFAULT_CHAIN_ID,
-  DEFAULT_NAMESPACE,
-  DEFAULT_TRUST_MODELS,
-} from '../config';
+import { DEFAULT_NAMESPACE, DEFAULT_TRUST_MODELS } from '../config';
 
 export type IdentityRegistryClientOptions<
   PublicClient extends PublicClientLike,
@@ -357,9 +351,6 @@ export async function signAgentDomainProof(
     throw new Error('address must be a valid hex address');
   }
 
-  // Use Viem's proper signMessage action
-  const { signDomainProof } = await import('../utils/signatures');
-
   return signDomainProof(signer as any, {
     domain: normalizedDomain,
     address: normalizedAddress,
@@ -679,8 +670,14 @@ export async function bootstrapIdentity(
     warn: options.logger?.warn ?? defaultLogger.warn,
   } satisfies InferLogger;
 
-  const resolvedChainId =
-    options.chainId ?? parsePositiveInteger(env.CHAIN_ID) ?? DEFAULT_CHAIN_ID;
+  // Resolve chainId - required, no defaults
+  const resolvedChainId = options.chainId ?? parsePositiveInteger(env.CHAIN_ID);
+
+  if (!resolvedChainId) {
+    throw new Error(
+      '[agent-kit-identity] CHAIN_ID is required for bootstrap. Provide it via chainId parameter or CHAIN_ID environment variable.'
+    );
+  }
 
   const domain = options.domain ?? env.AGENT_DOMAIN;
   const namespace = options.namespace ?? DEFAULT_NAMESPACE;
@@ -769,20 +766,37 @@ async function importViemModules(): Promise<{
   createWalletClient: (...args: any[]) => any;
   http: (url: string) => any;
   privateKeyToAccount: (key: `0x${string}`) => any;
-  baseSepolia: { id: number } & Record<string, unknown>;
+  getChainById: (
+    chainId: number
+  ) => ({ id: number } & Record<string, unknown>) | null;
 } | null> {
   try {
     const viem = await import('viem');
     const accounts = await import('viem/accounts');
     const chains = await import('viem/chains').catch(() => ({}));
-    const baseSepoliaChain =
-      (chains as any).baseSepolia ?? ({ id: DEFAULT_CHAIN_ID } as const);
+
+    // Helper to find a chain definition by chainId from viem's chains
+    const getChainById = (chainId: number) => {
+      if (!chains || typeof chains !== 'object') {
+        return null;
+      }
+      // Try to find a chain that matches the chainId
+      // viem exports chains as named exports, so we iterate through them
+      for (const key in chains) {
+        const chain = (chains as any)[key];
+        if (chain && typeof chain === 'object' && chain.id === chainId) {
+          return chain;
+        }
+      }
+      return null;
+    };
+
     return {
       createPublicClient: (viem as any).createPublicClient,
       createWalletClient: (viem as any).createWalletClient,
       http: (viem as any).http,
       privateKeyToAccount: (accounts as any).privateKeyToAccount,
-      baseSepolia: baseSepoliaChain,
+      getChainById,
     };
   } catch (error) {
     defaultLogger.warn(
@@ -828,7 +842,12 @@ export async function makeViemClientsFromWallet(
     }
 
     const transport = modules.http(effectiveRpcUrl);
-    const chain = { ...modules.baseSepolia, id: chainId };
+    // Get chain definition from viem if available, but ensure we use our RPC URL
+    // Override any RPC URLs in the chain definition with our explicit transport
+    const chainTemplate = modules.getChainById(chainId);
+    const chain = chainTemplate
+      ? { ...chainTemplate, id: chainId }
+      : { id: chainId };
     const publicClient = modules.createPublicClient({ chain, transport });
 
     // For local wallets, try to extract the signer to create a wallet client
@@ -980,7 +999,12 @@ export async function makeViemClientsFromEnv(
     }
 
     const transport = modules.http(effectiveRpcUrl);
-    const chain = { ...modules.baseSepolia, id: chainId };
+    // Get chain definition from viem if available, but ensure we use our RPC URL
+    // Override any RPC URLs in the chain definition with our explicit transport
+    const chainTemplate = modules.getChainById(chainId);
+    const chain = chainTemplate
+      ? { ...chainTemplate, id: chainId }
+      : { id: chainId };
     const publicClient = modules.createPublicClient({ chain, transport });
 
     // This function no longer creates wallet clients since privateKey is removed

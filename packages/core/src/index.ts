@@ -8,7 +8,7 @@ export {
   type StreamContext,
   ZodValidationError,
 } from './core/agent';
-export type { AgentContext, AgentMeta, Network, Usage } from './core/types';
+export type { Network } from './core/types';
 export type {
   EntrypointDef,
   EntrypointHandler,

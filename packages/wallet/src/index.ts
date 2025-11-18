@@ -21,3 +21,6 @@ export {
 export { createPrivateKeySigner } from './private-key-signer';
 export { createAgentWallet } from './create-agent-wallet';
 export { walletsFromEnv } from './env';
+
+// Export utilities
+export * from './utils';

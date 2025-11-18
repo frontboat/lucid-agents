@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 
 import type {
   AgentKitConfig,
+  AgentMeta,
   AgentRuntime,
   AP2Config,
 } from '@lucid-agents/types/core';
@@ -10,7 +11,6 @@ import type { TrustConfig } from '@lucid-agents/types/identity';
 import type { PaymentsConfig } from '@lucid-agents/types/payments';
 
 import { ZodValidationError } from '../core/agent';
-import type { AgentMeta } from '../core/types';
 import { createAgentRuntime, type CreateAgentRuntimeOptions } from '../runtime';
 import { renderLandingPage } from '../ui/landing-page';
 import { createSSEStream, type SSEStreamRunnerContext } from './sse';

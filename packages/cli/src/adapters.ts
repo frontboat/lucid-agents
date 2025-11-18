@@ -34,11 +34,11 @@ const adapterDefinitions: Record<string, AdapterDefinition> = {
     snippets: {
       imports: `import { createAgentApp } from "@lucid-agents/hono";`,
       preSetup: ``,
-      appCreation: `const { app, addEntrypoint } = createAgentApp(
+      appCreation: `const { app, runtime, addEntrypoint } = createAgentApp(
   {
-    name: process.env.AGENT_NAME,
-    version: process.env.AGENT_VERSION,
-    description: process.env.AGENT_DESCRIPTION,
+    name: process.env.AGENT_NAME || "Agent",
+    version: process.env.AGENT_VERSION || "1.0.0",
+    description: process.env.AGENT_DESCRIPTION || "An AI agent",
   },
   typeof appOptions !== 'undefined' ? appOptions : {}
 );`,
@@ -68,11 +68,11 @@ const adapterDefinitions: Record<string, AdapterDefinition> = {
     snippets: {
       imports: `import { createAgentApp } from "@lucid-agents/express";`,
       preSetup: ``,
-      appCreation: `const { app, addEntrypoint } = createAgentApp(
+      appCreation: `const { app, runtime, addEntrypoint } = createAgentApp(
   {
-    name: process.env.AGENT_NAME,
-    version: process.env.AGENT_VERSION,
-    description: process.env.AGENT_DESCRIPTION,
+    name: process.env.AGENT_NAME || "Agent",
+    version: process.env.AGENT_VERSION || "1.0.0",
+    description: process.env.AGENT_DESCRIPTION || "An AI agent",
   },
   typeof appOptions !== 'undefined' ? appOptions : {}
 );`,
@@ -104,9 +104,9 @@ const adapterDefinitions: Record<string, AdapterDefinition> = {
       preSetup: ``,
       appCreation: `const tanstack = createTanStackRuntime(
   {
-    name: process.env.AGENT_NAME,
-    version: process.env.AGENT_VERSION,
-    description: process.env.AGENT_DESCRIPTION,
+    name: process.env.AGENT_NAME || "Agent",
+    version: process.env.AGENT_VERSION || "1.0.0",
+    description: process.env.AGENT_DESCRIPTION || "An AI agent",
   },
   typeof appOptions !== 'undefined' ? appOptions : {}
 );
@@ -142,9 +142,9 @@ export { agent, handlers, runtime };`,
       preSetup: ``,
       appCreation: `const tanstack = createTanStackRuntime(
   {
-    name: process.env.AGENT_NAME,
-    version: process.env.AGENT_VERSION,
-    description: process.env.AGENT_DESCRIPTION,
+    name: process.env.AGENT_NAME || "Agent",
+    version: process.env.AGENT_VERSION || "1.0.0",
+    description: process.env.AGENT_DESCRIPTION || "An AI agent",
   },
   typeof appOptions !== 'undefined' ? appOptions : {}
 );
@@ -180,9 +180,9 @@ export { agent, handlers, runtime };`,
       preSetup: ``,
       appCreation: `const runtime = createAgentHttpRuntime(
   {
-    name: process.env.AGENT_NAME,
-    version: process.env.AGENT_VERSION,
-    description: process.env.AGENT_DESCRIPTION,
+    name: process.env.AGENT_NAME || "Agent",
+    version: process.env.AGENT_VERSION || "1.0.0",
+    description: process.env.AGENT_DESCRIPTION || "An AI agent",
   },
   typeof appOptions !== 'undefined' ? appOptions : {}
 );

@@ -8,11 +8,9 @@ import express, {
 import { Readable } from 'node:stream';
 import type { ReadableStream as WebReadableStream } from 'node:stream/web';
 import type { TLSSocket } from 'node:tls';
-import type {
-  AgentHttpRuntime,
-  AgentMeta,
-  EntrypointDef,
-} from '@lucid-agents/core';
+import type { AgentHttpRuntime, EntrypointDef } from '@lucid-agents/core';
+import type { AgentMeta } from '@lucid-agents/types/core';
+import type { CreateAgentAppReturn } from '@lucid-agents/types/core';
 import {
   createAgentHttpRuntime,
   type CreateAgentHttpOptions,
@@ -36,17 +34,15 @@ export type CreateAgentAppOptions = CreateAgentHttpOptions & {
   afterMount?: (app: Express) => void;
 };
 
-type AgentApp = {
-  app: Express;
-  agent: AgentHttpRuntime['agent'];
-  addEntrypoint: (def: EntrypointDef) => void;
-  config: AgentHttpRuntime['config'];
-};
-
 export function createAgentApp(
   meta: AgentMeta,
   opts?: CreateAgentAppOptions
-): AgentApp {
+): CreateAgentAppReturn<
+  Express,
+  AgentHttpRuntime,
+  AgentHttpRuntime['agent'],
+  AgentHttpRuntime['config']
+> {
   const runtime = createAgentHttpRuntime(meta, opts);
   const app = express();
 
@@ -122,6 +118,7 @@ export function createAgentApp(
 
   return {
     app,
+    runtime,
     agent: runtime.agent,
     addEntrypoint,
     config: runtime.config,
@@ -136,10 +133,17 @@ function createRouteHandler<TParams extends Record<string, unknown>>(
   params: TParams
 ): RequestHandler;
 function createRouteHandler(
-  handler: (req: Request, params?: Record<string, unknown>) => Promise<Response>,
+  handler: (
+    req: Request,
+    params?: Record<string, unknown>
+  ) => Promise<Response>,
   params?: Record<string, unknown>
 ): RequestHandler {
-  return async (req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
+  return async (
+    req: ExpressRequest,
+    res: ExpressResponse,
+    next: NextFunction
+  ) => {
     try {
       const request = toWebRequest(req);
       const response = await handler(request, params);
@@ -150,7 +154,9 @@ function createRouteHandler(
   };
 }
 
-function isEncryptedSocket(socket: ExpressRequest['socket']): socket is TLSSocket {
+function isEncryptedSocket(
+  socket: ExpressRequest['socket']
+): socket is TLSSocket {
   return Boolean((socket as TLSSocket).encrypted);
 }
 
@@ -158,7 +164,10 @@ function toWebRequest(req: ExpressRequest): Request {
   const protocol =
     req.protocol ?? (isEncryptedSocket(req.socket) ? 'https' : 'http');
   const host = req.get('host') ?? 'localhost';
-  const url = new URL(req.originalUrl || req.url || '/', `${protocol}://${host}`);
+  const url = new URL(
+    req.originalUrl || req.url || '/',
+    `${protocol}://${host}`
+  );
   const method = (req.method ?? 'GET').toUpperCase();
 
   const headers = new Headers();
@@ -186,7 +195,10 @@ function toWebRequest(req: ExpressRequest): Request {
   return new Request(url, init);
 }
 
-async function sendResponse(res: ExpressResponse, response: Response): Promise<void> {
+async function sendResponse(
+  res: ExpressResponse,
+  response: Response
+): Promise<void> {
   res.status(response.status);
   res.statusMessage = response.statusText || res.statusMessage;
 
@@ -206,7 +218,8 @@ async function sendResponse(res: ExpressResponse, response: Response): Promise<v
     }
   }
 
-  const webBody = response.body as unknown as WebReadableStream<Uint8Array> | null;
+  const webBody =
+    response.body as unknown as WebReadableStream<Uint8Array> | null;
 
   if (!webBody) {
     res.end();

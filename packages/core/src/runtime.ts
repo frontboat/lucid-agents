@@ -5,6 +5,7 @@ import {
 import type {
   AgentCardWithEntrypoints,
   AgentKitConfig,
+  AgentMeta,
   AgentRuntime,
   AP2Config,
 } from '@lucid-agents/types/core';
@@ -14,7 +15,7 @@ import { createAgentWallet } from '@lucid-agents/wallet';
 
 import { getAgentKitConfig, setActiveInstanceConfig } from './config/config';
 import { createAgentCore } from './core/agent';
-import type { AgentMeta, Network } from './core/types';
+import type { Network } from './core/types';
 import type { EntrypointDef } from './http/types';
 import { buildManifest } from './manifest/manifest';
 

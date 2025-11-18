@@ -2,6 +2,7 @@ import { resolvePrice } from '@lucid-agents/payments';
 import type {
   AgentCapabilities,
   AgentCardWithEntrypoints,
+  AgentMeta,
   AP2Config,
   AP2ExtensionDescriptor,
   AP2Role,
@@ -11,7 +12,6 @@ import type {
 import type { TrustConfig } from '@lucid-agents/types/identity';
 import type { PaymentsConfig } from '@lucid-agents/types/payments';
 
-import type { AgentMeta } from '../core/types';
 import type { EntrypointDef } from '../http/types';
 import { toJsonSchemaOrUndefined } from '../utils';
 import { AP2_EXTENSION_URI } from './ap2';

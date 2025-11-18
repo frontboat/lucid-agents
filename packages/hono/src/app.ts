@@ -1,9 +1,14 @@
 import { Hono } from 'hono';
-import type { AgentMeta, EntrypointDef } from '@lucid-agents/types/core';
+import type {
+  AgentMeta,
+  EntrypointDef,
+  CreateAgentAppReturn,
+} from '@lucid-agents/types/core';
 import { withPayments } from './paywall';
 import {
   createAgentHttpRuntime,
   type CreateAgentHttpOptions,
+  type AgentHttpRuntime,
 } from '@lucid-agents/core';
 
 export type CreateAgentAppOptions = CreateAgentHttpOptions & {
@@ -19,7 +24,15 @@ export type CreateAgentAppOptions = CreateAgentHttpOptions & {
   afterMount?: (app: Hono) => void;
 };
 
-export function createAgentApp(meta: AgentMeta, opts?: CreateAgentAppOptions) {
+export function createAgentApp(
+  meta: AgentMeta,
+  opts?: CreateAgentAppOptions
+): CreateAgentAppReturn<
+  Hono,
+  AgentHttpRuntime,
+  ReturnType<typeof createAgentHttpRuntime>['agent'],
+  ReturnType<typeof createAgentHttpRuntime>['config']
+> {
   const runtime = createAgentHttpRuntime(meta, opts);
   const app = new Hono();
 
@@ -94,10 +107,17 @@ export function createAgentApp(meta: AgentMeta, opts?: CreateAgentAppOptions) {
   // Allow custom routes and handlers after agent routes
   opts?.afterMount?.(app);
 
-  return {
+  const result: CreateAgentAppReturn<
+    Hono,
+    AgentHttpRuntime,
+    ReturnType<typeof createAgentHttpRuntime>['agent'],
+    ReturnType<typeof createAgentHttpRuntime>['config']
+  > = {
     app,
+    runtime,
     agent: runtime.agent,
     addEntrypoint,
     config: runtime.config,
   };
+  return result;
 }

@@ -3,8 +3,10 @@
  * Handles validation requests and responses for agent work verification
  */
 
+import type { Hex } from '@lucid-agents/wallet';
+
 import { VALIDATION_REGISTRY_ABI } from '../abi/types';
-import type { Hex } from '../utils';
+import { hashValidationRequest } from './erc8004-signatures';
 import type { PublicClientLike, WalletClientLike } from './identity';
 
 /**
@@ -53,7 +55,7 @@ export type CreateValidationRequestInput = {
   validatorAddress: Hex;
   agentId: bigint;
   requestUri: string;
-  requestHash: Hex;
+  requestHash?: Hex; // Optional - will be computed from requestUri if not provided
 };
 
 /**
@@ -133,6 +135,10 @@ export function createValidationRegistryClient<
     async createRequest(input) {
       const wallet = ensureWalletClient();
 
+      // Compute request hash from URI if not provided
+      const requestHash =
+        input.requestHash ?? hashValidationRequest(input.requestUri);
+
       const txHash = await wallet.writeContract({
         address,
         abi: VALIDATION_REGISTRY_ABI,
@@ -141,7 +147,7 @@ export function createValidationRegistryClient<
           input.validatorAddress,
           input.agentId,
           input.requestUri,
-          input.requestHash,
+          requestHash,
         ],
       });
 
