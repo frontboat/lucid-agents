@@ -209,7 +209,6 @@ export function createReputationRegistryClient<
         feedbackAuth = await signFeedbackAuth(wallet as SignerWalletClient, {
           fromAddress: clientAddress,
           toAgentId: input.toAgentId,
-          score: input.score,
           chainId,
           expiry,
           indexLimit,

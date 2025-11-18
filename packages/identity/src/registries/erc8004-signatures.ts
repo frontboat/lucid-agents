@@ -70,7 +70,7 @@ export function hashFeedbackAuthStruct(params: {
   // Order: agentId, clientAddress, indexLimit, expiry, chainId, identityRegistry, signerAddress
   const encoded = encodeAbiParameters(
     parseAbiParameters(
-      'uint256, address, uint256, uint64, uint256, address, address'
+      'uint256, address, uint64, uint256, uint256, address, address'
     ),
     [
       params.agentId,
@@ -109,7 +109,6 @@ export async function signFeedbackAuth(
   params: {
     fromAddress: Hex;
     toAgentId: bigint;
-    score: number;
     chainId: number;
     expiry: number;
     indexLimit: bigint;
@@ -122,7 +121,7 @@ export async function signFeedbackAuth(
   // Step 1: Encode the struct with abi.encode() (this is what gets sent to the contract)
   const encodedStruct = encodeAbiParameters(
     parseAbiParameters(
-      'uint256, address, uint256, uint64, uint256, address, address'
+      'uint256, address, uint64, uint256, uint256, address, address'
     ),
     [
       params.toAgentId,
