@@ -1,5 +1,8 @@
 import type { AgentRuntime, FetchFunction } from '@lucid-agents/types/core';
-import type { A2ARuntime, CreateA2ARuntimeOptions } from '@lucid-agents/types/a2a';
+import type {
+  A2ARuntime,
+  CreateA2ARuntimeOptions,
+} from '@lucid-agents/types/a2a';
 
 import { buildAgentCard, fetchAgentCard } from './card';
 import { invokeAgent, streamAgent, fetchAndInvoke } from './client';
@@ -35,4 +38,3 @@ export function createA2ARuntime(
 
   return a2aRuntime;
 }
-

@@ -13,11 +13,11 @@ export function createAgentCardWithIdentity(
     ...card,
   };
 
-  if (trustConfig.registrations?.length) {
+  if (trustConfig.registrations) {
     enhanced.registrations = trustConfig.registrations;
   }
 
-  if (trustConfig.trustModels?.length) {
+  if (trustConfig.trustModels) {
     const unique = Array.from(new Set(trustConfig.trustModels));
     enhanced.trustModels = unique;
   }
