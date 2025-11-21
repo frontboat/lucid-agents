@@ -513,24 +513,59 @@ export function createAgentHttpRuntime(
         })
         .then(result => {
           const entry = tasks.get(taskId);
-          if (entry) {
-            const updatedTask: Task = {
-              ...entry.task,
-              status: 'completed',
-              result: {
-                output: result.output,
-                usage: result.usage,
-                model: result.model,
-              } as TaskResult,
-              updatedAt: new Date().toISOString(),
-            };
-            tasks.set(taskId, { task: updatedTask });
+          if (!entry) return;
+
+          const currentStatus = entry.task.status;
+          if (
+            currentStatus === 'completed' ||
+            currentStatus === 'failed' ||
+            currentStatus === 'cancelled'
+          ) {
+            return;
           }
+
+          const updatedTask: Task = {
+            ...entry.task,
+            status: 'completed',
+            result: {
+              output: result.output,
+              usage: result.usage,
+              model: result.model,
+            } as TaskResult,
+            updatedAt: new Date().toISOString(),
+          };
+          tasks.set(taskId, {
+            task: updatedTask,
+            controller: entry.controller,
+          });
           console.info('[agent-kit:task] completed', `taskId=${taskId}`);
         })
         .catch(err => {
           const entry = tasks.get(taskId);
           if (!entry) return;
+
+          const currentStatus = entry.task.status;
+          if (
+            currentStatus === 'completed' ||
+            currentStatus === 'failed' ||
+            currentStatus === 'cancelled'
+          ) {
+            return;
+          }
+
+          if (err.name === 'AbortError') {
+            const updatedTask: Task = {
+              ...entry.task,
+              status: 'cancelled',
+              updatedAt: new Date().toISOString(),
+            };
+            tasks.set(taskId, {
+              task: updatedTask,
+              controller: entry.controller,
+            });
+            console.info('[agent-kit:task] cancelled', `taskId=${taskId}`);
+            return;
+          }
 
           let error: TaskError;
           if (err instanceof ZodValidationError) {
@@ -560,7 +595,10 @@ export function createAgentHttpRuntime(
             error,
             updatedAt: new Date().toISOString(),
           };
-          tasks.set(taskId, { task: updatedTask });
+          tasks.set(taskId, {
+            task: updatedTask,
+            controller: entry.controller,
+          });
           console.info(
             '[agent-kit:task] failed',
             `taskId=${taskId}`,
@@ -664,7 +702,7 @@ export function createAgentHttpRuntime(
         updatedAt: new Date().toISOString(),
       };
 
-      tasks.set(taskId, { task: updatedTask });
+      tasks.set(taskId, { task: updatedTask, controller: entry.controller });
       console.info('[agent-kit:task] cancelled', `taskId=${taskId}`);
 
       return jsonResponse(updatedTask);
@@ -688,6 +726,8 @@ export function createAgentHttpRuntime(
       const task = entry.task;
       return createSSEStream(
         async ({ write, close }: SSEStreamRunnerContext) => {
+          let lastStatus = task.status;
+
           write({
             event: 'statusUpdate',
             data: JSON.stringify({
@@ -722,6 +762,18 @@ export function createAgentHttpRuntime(
             return;
           }
 
+          if (task.status === 'cancelled') {
+            write({
+              event: 'statusUpdate',
+              data: JSON.stringify({
+                taskId,
+                status: task.status,
+              }),
+            });
+            close();
+            return;
+          }
+
           const checkInterval = setInterval(() => {
             const currentEntry = tasks.get(taskId);
             if (!currentEntry) {
@@ -731,7 +783,7 @@ export function createAgentHttpRuntime(
             }
 
             const currentTask = currentEntry.task;
-            if (currentTask.status !== task.status) {
+            if (currentTask.status !== lastStatus) {
               write({
                 event: 'statusUpdate',
                 data: JSON.stringify({
@@ -739,6 +791,7 @@ export function createAgentHttpRuntime(
                   status: currentTask.status,
                 }),
               });
+              lastStatus = currentTask.status;
             }
 
             if (currentTask.status === 'completed' && currentTask.result) {
@@ -762,6 +815,19 @@ export function createAgentHttpRuntime(
                   taskId,
                   status: currentTask.status,
                   error: currentTask.error,
+                }),
+              });
+              clearInterval(checkInterval);
+              close();
+              return;
+            }
+
+            if (currentTask.status === 'cancelled') {
+              write({
+                event: 'statusUpdate',
+                data: JSON.stringify({
+                  taskId,
+                  status: currentTask.status,
                 }),
               });
               clearInterval(checkInterval);

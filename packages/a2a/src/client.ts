@@ -126,7 +126,8 @@ export async function streamAgent(
           };
         } else if (line.startsWith('data: ')) {
           if (currentEvent) {
-            currentEvent.data += line.slice(6);
+            currentEvent.data +=
+              (currentEvent.data ? '\n' : '') + line.slice(6);
           }
         } else if (line === '' && currentEvent) {
           try {
@@ -321,7 +322,8 @@ export async function subscribeTask(
           };
         } else if (line.startsWith('data: ')) {
           if (currentEvent) {
-            currentEvent.data += line.slice(6);
+            currentEvent.data +=
+              (currentEvent.data ? '\n' : '') + line.slice(6);
           }
         } else if (line === '' && currentEvent) {
           try {

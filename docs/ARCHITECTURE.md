@@ -278,7 +278,7 @@ Adapters integrate the core runtime with specific web frameworks.
 **Provides:**
 
 - Interactive project wizard
-- Template system (blank, axllm, identity, axllm-flow, trading-\*)
+- Template system (blank, axllm, identity, axllm-flow, trading-data-agent (merchant), trading-recommendation-agent (shopper))
 - Adapter selection (hono, tanstack-ui, tanstack-headless, express)
 - Merge system (combines adapter + template)
 
