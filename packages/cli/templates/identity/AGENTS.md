@@ -47,7 +47,7 @@ This template accepts the following configuration arguments (see `template.schem
 - `RPC_URL` - Blockchain RPC endpoint (e.g., "https://sepolia.base.org")
 - `CHAIN_ID` - Chain ID (e.g., "84532" for Base Sepolia)
 - `IDENTITY_AUTO_REGISTER` - Auto-register on ERC-8004 registry (boolean: true/false)
-- `PRIVATE_KEY` - Wallet private key (required for on-chain operations)
+- `AGENT_WALLET_PRIVATE_KEY` - Wallet private key (required for on-chain operations)
 
 ## What is ERC-8004?
 
@@ -142,7 +142,7 @@ const runtime = createAgentHttpRuntime(
       wallets: {
         agent: {
           type: "local",
-          privateKey: process.env.PRIVATE_KEY,
+          privateKey: process.env.AGENT_WALLET_PRIVATE_KEY,
         },
       },
     },
@@ -394,7 +394,7 @@ AGENT_DOMAIN=agent.example.com
 # Blockchain configuration
 RPC_URL=https://sepolia.base.org
 CHAIN_ID=84532
-PRIVATE_KEY=0x...  # Required for on-chain operations
+AGENT_WALLET_PRIVATE_KEY=0x...  # Required for on-chain operations
 
 # Identity configuration (boolean: true or false)
 IDENTITY_AUTO_REGISTER=true
@@ -500,7 +500,7 @@ addEntrypoint({
 
 When `IDENTITY_AUTO_REGISTER=true` and the agent is not registered:
 
-1. The agent reads `AGENT_DOMAIN` and `PRIVATE_KEY` from `.env`
+1. The agent reads `AGENT_DOMAIN` and `AGENT_WALLET_PRIVATE_KEY` from `.env`
 2. Creates a wallet from the private key
 3. Connects to the blockchain via `RPC_URL`
 4. Calls the Identity Registry contract to register
@@ -560,7 +560,7 @@ const metadata = generateAgentMetadata(identity, {
 
 Ensure:
 1. `IDENTITY_AUTO_REGISTER=true` in `.env`
-2. `PRIVATE_KEY` is set and has gas for transactions
+2. `AGENT_WALLET_PRIVATE_KEY` is set and has gas for transactions
 3. `RPC_URL` and `CHAIN_ID` are correct
 4. Network is supported (check Identity Registry deployment)
 
@@ -570,7 +570,7 @@ Check:
 1. Wallet has sufficient gas
 2. RPC URL is accessible
 3. Domain is not already registered by another address
-4. Private key format is correct (0x-prefixed hex)
+4. Agent wallet private key format is correct (0x-prefixed hex)
 
 ### Can't query other agents
 

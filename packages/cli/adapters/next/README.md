@@ -22,7 +22,6 @@ Update `.env` with:
 NEXT_PUBLIC_PROJECT_ID=your_wallet_connect_id
 PAYMENTS_RECEIVABLE_ADDRESS=0x...
 PAYMENTS_NETWORK=base-sepolia
-PAYMENTS_DEFAULT_PRICE=0.1
 PAYMENTS_FACILITATOR_URL=https://facilitator.daydreams.systems
 ```
 
@@ -36,3 +35,9 @@ bun run dev
 ## Optional Coinbase Onramp
 
 Set `CDP_API_KEY_ID`/`CDP_API_KEY_SECRET` and call the provided `/api/x402/session-token` route to surface the "Get more USDC" button inside the paywall.
+
+## Docs
+
+- Architecture map: `docs/ARCHITECTURE.md`
+- Package guides: `docs/packages/tanstack.md`, `docs/packages/x402-tanstack-start.md`
+- Working notes: `AGENTS.md`

@@ -5,7 +5,7 @@ This agent buys trading data from a data agent and generates trading signals/rec
 ### Quick Start
 
 ```sh
-bunx @lucid-agents/create-agent-kit recommendation-agent --template=trading-recommendation-agent --adapter=hono
+bunx @lucid-agents/cli recommendation-agent --template=trading-recommendation-agent --adapter=hono
 cd recommendation-agent
 # Set AGENT_WALLET_PRIVATE_KEY and DATA_AGENT_URL in .env
 bun run dev
@@ -54,3 +54,8 @@ The agent will automatically pay the data agent for the market data.
 
 See `AGENTS.md` for detailed implementation guide.
 
+## Docs
+
+- Architecture + flows: `docs/ARCHITECTURE.md`
+- Package guides: `docs/packages/core.md`, `docs/packages/payments.md`, `docs/packages/a2a.md`
+- Working notes: `AGENTS.md`

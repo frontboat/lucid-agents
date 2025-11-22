@@ -16,10 +16,10 @@ This project was scaffolded with `create-agent-kit` and includes **ERC-8004 iden
 
    ```sh
    cp .env.example .env
-   # Edit .env and add your PRIVATE_KEY
+   # Edit .env and add your AGENT_WALLET_PRIVATE_KEY
    ```
 
-   The private key is used to:
+   The agent wallet private key is used to:
 
    - Register your agent on-chain (ERC-8004 Identity Registry)
    - Sign domain ownership proofs
@@ -79,17 +79,18 @@ await validationClient.createRequest({
 
 **Required:**
 
-- `PRIVATE_KEY` – Your wallet's private key for signing transactions and payments
+- `AGENT_WALLET_PRIVATE_KEY` – Wallet private key for signing transactions (identity registration + payments)
 
 **Pre-configured from setup:**
 
 - `AGENT_DOMAIN` – Configured during agent creation
-- `FACILITATOR_URL`, `PAYMENTS_RECEIVABLE_ADDRESS`, `NETWORK`, `DEFAULT_PRICE` – Payment settings from setup
+- `PAYMENTS_FACILITATOR_URL`, `PAYMENTS_RECEIVABLE_ADDRESS`, `PAYMENTS_NETWORK` – Payment settings from setup
 
 **Optional:**
 
 - `RPC_URL` – Blockchain RPC endpoint (default: Base Sepolia)
 - `CHAIN_ID` – Chain ID (default: 84532 for Base Sepolia)
+- `DEVELOPER_WALLET_PRIVATE_KEY` – Separate signing key for dev-initiated flows
 
 **Optional (server):**
 
@@ -119,6 +120,8 @@ await validationClient.createRequest({
 
 ### Learn more
 
-- [Agent Kit Documentation](https://github.com/lucid-dreams/lucid-agents/blob/master/packages/core/README.md)
-- [Identity Kit Documentation](https://github.com/lucid-dreams/lucid-agents/blob/master/packages/identity/README.md)
+- Architecture + flows: `docs/ARCHITECTURE.md`
+- Identity package guide: `docs/packages/identity.md`
+- Payments overview: `docs/packages/payments.md`
+- Working notes: `AGENTS.md`
 - [ERC-8004 Specification](https://eips.ethereum.org/EIPS/eip-8004)

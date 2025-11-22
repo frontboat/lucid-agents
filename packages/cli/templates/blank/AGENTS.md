@@ -122,7 +122,7 @@ addEntrypoint({
   input: z.object({ data: z.string() }),
   price: "0.1", // Price denominated in USDC (decimal string)
   // Or different prices for invoke vs stream:
-  // price: { invoke: "1000", stream: "500" },
+  // price: { invoke: "0.1", stream: "0.05" },
   handler: async ({ input }) => {
     return {
       output: { result: "premium result" },

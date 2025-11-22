@@ -5,7 +5,7 @@ This agent provides mock trading data via priced entrypoints. Other agents can b
 ### Quick Start
 
 ```sh
-bunx @lucid-agents/create-agent-kit data-agent --template=trading-data-agent --adapter=hono
+bunx @lucid-agents/cli data-agent --template=trading-data-agent --adapter=hono
 cd data-agent
 # Set PAYMENTS_RECEIVABLE_ADDRESS in .env
 bun run dev
@@ -14,11 +14,11 @@ bun run dev
 ### Entrypoints
 
 - **`getMarketData`** - Returns full OHLCV (Open/High/Low/Close/Volume) data
-  - Price: 5000 base units
+  - Price: 0.1 USDC
   - Parameters: `symbol` (string), `timeframe` (optional: '1h', '4h', '1d')
 
 - **`getPrice`** - Returns current price only
-  - Price: 1000 base units
+  - Price: 0.02 USDC
   - Parameters: `symbol` (string)
 
 ### Environment Variables
@@ -43,3 +43,8 @@ This agent is designed to work with the `trading-recommendation-agent` template,
 
 See `AGENTS.md` for detailed implementation guide.
 
+## Docs
+
+- Architecture + flows: `docs/ARCHITECTURE.md`
+- Package guides: `docs/packages/core.md`, `docs/packages/payments.md`, `docs/packages/a2a.md`
+- Working notes: `AGENTS.md`

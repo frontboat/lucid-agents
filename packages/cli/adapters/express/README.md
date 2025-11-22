@@ -39,3 +39,9 @@ The CLI will:
 2. Inject template feature logic into the placeholders
 3. Merge package dependencies
 4. Generate .env file
+
+## Docs
+
+- Architecture map: `docs/ARCHITECTURE.md`
+- Express adapter details: `docs/packages/express.md`
+- Working notes for agents: `AGENTS.md`

@@ -20,7 +20,8 @@ Entrypoints can specify a `price` field:
 ```typescript
 addEntrypoint({
   key: 'getMarketData',
-  price: '5000', // Price in base units
+  // Prices are denominated in whole tokens (USDC); use small decimals for examples
+  price: '0.1',
   // ...
 });
 ```
@@ -59,7 +60,7 @@ Add new priced entrypoints:
 ```typescript
 addEntrypoint({
   key: 'getHistoricalData',
-  price: '10000',
+  price: '0.2',
   input: z.object({ /* ... */ }),
   output: z.object({ /* ... */ }),
   handler: async ctx => {
@@ -85,4 +86,3 @@ handler: async ctx => {
 - Add more data endpoints (indicators, order book, etc.)
 - Implement streaming for real-time data
 - Add data caching for performance
-

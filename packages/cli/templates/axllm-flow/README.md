@@ -29,3 +29,9 @@ The dev command runs `bun` in watch mode, starts the HTTP server, and reloads wh
 - Wire up `@lucid-agents/core` configuration and secrets (see `AGENTS.md` in the repo for details).
 - Copy `.env.example` to `.env` and fill in the values for your environment.
 - Deploy with your preferred Bun-compatible platform when you're ready.
+
+## Docs
+
+- Architecture + flows: `docs/ARCHITECTURE.md`
+- Package guides: `docs/packages/core.md`, `docs/packages/payments.md`
+- Working notes: `AGENTS.md`

@@ -17,19 +17,18 @@
 
 Lucid Agents is a TypeScript-first framework for building and monetizing AI agents—an agentic commerce and payments SDK. Build AI agents that sell services, facilitate monetary transactions, and participate in agent-to-agent marketplaces.
 
-**Core Capabilities:**
+## Key Features
 
-- **x402 Payment Protocol**: Accept payments in USDC on Ethereum L2s (Base) or Solana with automatic paywall middleware
+- **Multi-Adapter Architecture**: Write your agent logic once, deploy on Hono, Express, Next.js (adapter base), or TanStack Start
+- **x402 Payment Protocol**: Accept payments in USDC with automatic paywall middleware; supported networks include Base mainnet/Sepolia, Polygon/Amoy, Avalanche/Ava Fuji, IoTeX, Abstract + testnet, Sei + testnet, Peaq, Story, EduChain, SKALE Base Sepolia, and Solana mainnet/devnet
 - **A2A Protocol Support**: Agent-to-agent communication with task-based operations, enabling agents to buy and sell services from each other
 - **ERC-8004 Identity Layer**: Register agent identities on-chain, build reputation, and prove ownership for trust in agent marketplaces
-- **Multi-Adapter Architecture**: Write your agent logic once, deploy on Hono, TanStack Start, Express, or Next.js
 - **Type-Safe Entrypoints**: Define inputs/outputs with Zod schemas, get automatic validation and JSON schemas
 - **Streaming Support**: Server-Sent Events (SSE) for real-time agent responses
 - **Task Management**: Long-running tasks with status tracking, cancellation, and SSE subscriptions
 - **AgentCard Manifests**: Auto-generated A2A-compatible manifests with Open Graph tags for discoverability
 - **Template System**: Scaffold new agents with `blank`, `axllm`, `axllm-flow`, `identity`, `trading-data-agent`, or `trading-recommendation-agent` templates
-- **Multi-Network Support**: EVM (Base, Ethereum, Sepolia) and Solana (mainnet, devnet) payment networks
-- **Developer Experience**: CLI scaffolding, hot reload, comprehensive examples, TypeScript strict mode, and ESM modules
+- **Production-Ready**: Built with TypeScript strict mode, ESM modules, and comprehensive testing
 
 Whether you're building paid AI services, agent marketplaces, or multi-agent systems where agents transact with each other, Lucid Agents provides the payments and commerce infrastructure you need.
 
@@ -51,21 +50,21 @@ Get your first monetized AI agent running in minutes.
 # Interactive mode - CLI guides you through all options
 bunx @lucid-agents/cli my-agent
 
-# Or use inline configuration for faster setup
+# Or use inline configuration for faster setup (non-interactive)
 bunx @lucid-agents/cli my-agent \
   --adapter=hono \
   --template=axllm \
+  --non-interactive \
   --AGENT_NAME="My AI Agent" \
   --AGENT_DESCRIPTION="AI-powered assistant" \
   --OPENAI_API_KEY=your_api_key_here \
   --PAYMENTS_RECEIVABLE_ADDRESS=0xYourAddress \
-  --NETWORK=base-sepolia \
-  --DEFAULT_PRICE=1000
+  --network=base-sepolia
 ```
 
 The CLI will:
 
-- **Adapter selection**: `hono` (HTTP server), `tanstack-ui` (full dashboard), `tanstack-headless` (API only), `express` (Node.js server), or `next` (Next.js App Router)
+- **Adapter selection**: `hono` (HTTP server), `express` (Node middleware), `tanstack-ui` (full dashboard), `tanstack-headless` (API only), or `next` (App Router shell)
 - **Template selection**: `blank` (minimal), `axllm` (LLM-powered), `axllm-flow` (workflows), `identity` (on-chain identity), `trading-data-agent` (merchant), or `trading-recommendation-agent` (shopper)
 - **Configuration**: Set agent metadata, LLM keys, and optional payment details
 - **Install dependencies**: Automatically run `bun install`
@@ -108,6 +107,36 @@ Lucid Agents is a TypeScript monorepo built for multi-runtime agent deployment w
 
 > For detailed architecture documentation including dependency graphs, request flows, and extension system design, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
+### Core Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                         Your Agent                          │
+│  ┌────────────────────────────────────────────────────────┐ │
+│  │  Entrypoints (typed with Zod)                          │ │
+│  │  ├─ invoke handlers (request → response)               │ │
+│  │  └─ stream handlers (request → SSE stream)             │ │
+│  └────────────────────────────────────────────────────────┘ │
+└──────────────────────────┬──────────────────────────────────┘
+                           │
+         ┌─────────────────┼─────────────────┐
+         │                 │                 │
+    ┌────▼─────┐    ┌──────▼──────┐   ┌─────▼────────┐
+    │   Hono   │    │  TanStack   │   │   Express    │
+    │  Adapter │    │   Adapter   │   │   Adapter    │
+    └────┬─────┘    └──────┬──────┘   └─────┬────────┘
+         │                 │                 │
+         └─────────────────┼─────────────────┘
+                           │
+         ┌─────────────────┴─────────────────┐
+         │                                   │
+    ┌────▼──────────┐              ┌────────▼────────┐
+    │     core      │              │   payments      │
+    │  (core)       │◄─────────────┤  identity       │
+    │               │              │  (ERC-8004)     │
+    └───────────────┘              └─────────────────┘
+```
+
 ### Package Structure
 
 ```
@@ -118,50 +147,18 @@ Lucid Agents is a TypeScript monorepo built for multi-runtime agent deployment w
 │   │   ├── src/http/           # HTTP utilities, task handlers
 │   │   └── src/axllm/          # LLM integration helpers
 │   │
-│   ├── a2a/              # A2A Protocol client
-│   │   ├── src/client.ts       # Agent-to-agent client (invoke, stream, tasks)
-│   │   ├── src/card.ts         # Agent Card building and fetching
-│   │   └── src/runtime.ts      # A2A runtime integration
-│   │
-│   ├── ap2/              # AP2 (Agent Payments Protocol) extension
-│   │   ├── src/runtime.ts      # AP2 runtime
-│   │   └── src/manifest.ts     # Agent Card AP2 enhancement
-│   │
-│   ├── wallet/           # Wallet SDK
-│   │   ├── src/connectors/     # Wallet connectors (local, server)
-│   │   └── src/factory.ts     # Wallet factory
-│   │
-│   ├── hono/         # Hono HTTP server adapter
-│   │   ├── src/app.ts          # createAgentApp() for Hono
-│   │   └── src/paywall.ts      # x402 payment middleware
-│   │
-│   ├── tanstack/     # TanStack Start adapter
-│   │   ├── src/runtime.ts      # createTanStackRuntime()
-│   │   └── src/paywall.ts      # TanStack payment middleware
-│   │
-│   ├── express/       # Express adapter
-│   │   ├── src/app.ts          # createAgentApp() for Express
-│   │   └── src/paywall.ts      # Express payment middleware
-│   │
-│   ├── next/         # Next.js adapter
-│   │   ├── app/                # Next.js App Router routes
-│   │   ├── components/         # Dashboard UI components
-│   │   └── lib/                # Agent setup and utilities
-│   │
-│   ├── identity/     # ERC-8004 identity toolkit
-│   │   ├── src/init.ts         # createAgentIdentity()
-│   │   ├── src/registries/     # Identity/Reputation/Validation clients
-│   │   └── src/utils/          # Signature helpers, CAIP-10
-│   │
-│   ├── payments/     # x402 payment utilities
-│   │   ├── src/payments.ts     # Multi-network payment config
-│   │   └── src/x402.ts         # x402 protocol helpers
-│   │
-│   └── cli/       # CLI scaffolding tool
-│       ├── src/index.ts        # Interactive CLI
-│       ├── adapters/           # Runtime frameworks (hono, tanstack, express, next)
-│       └── templates/          # Project templates (blank, axllm, identity, trading-*)
+│   ├── wallet/            # Wallet connectors + env helpers
+│   ├── payments/          # x402 pricing/runtime, manifest, AxLLM helpers
+│   ├── identity/          # ERC-8004 identity/trust
+│   ├── a2a/               # Agent-to-Agent card/client
+│   ├── ap2/               # AP2 extension helpers
+│   ├── hono/              # Hono HTTP server adapter + x402 middleware
+│   ├── express/           # Express adapter + x402 middleware
+│   ├── tanstack/          # TanStack Start adapter + paywall builder
+│   ├── x402-tanstack-start/ # TanStack Start x402 middleware
+│   └── cli/               # CLI scaffolding tool (adapters + templates; includes next adapter base)
 ```
+> Note: The Next.js adapter is shipped as a CLI adapter base under `packages/cli/adapters/next` (not a separate published package).
 
 ### Key Concepts
 
@@ -173,24 +170,16 @@ Lucid Agents is a TypeScript monorepo built for multi-runtime agent deployment w
 
 **Adapters**: Runtime frameworks that expose your entrypoints as HTTP routes. Choose based on your deployment needs:
 
-- `hono` - Lightweight, edge-compatible HTTP server
-- `tanstack` - Full-stack React with UI dashboard (or headless API-only)
-- `express` - Traditional Node.js HTTP server
-- `next` - Next.js App Router integration
+- `hono` - Lightweight HTTP server (Bun/edge-friendly)
+- `express` - Node-style HTTP server with middleware ecosystem
+- `tanstack` - TanStack Start adapter (UI/dashboard or headless)
+- `next` - App Router shell (scaffolded via CLI adapter base)
 
-**A2A Communication**: Agent-to-agent communication protocol enabling agents to call other agents:
-
-- **Direct Invocation**: Synchronous calls via `client.invoke()` or `client.stream()`
-- **Task-Based Operations**: Long-running tasks with `sendMessage()`, status tracking, and cancellation
-- **Multi-Turn Conversations**: Group related tasks with `contextId` for conversational agents
-- **Agent Composition**: Agents can act as both clients and servers, enabling complex supply chains
-
-**Manifests**: Auto-generated AgentCard (`.well-known/agent-card.json`) that describes your agent's capabilities, pricing, and identity for discovery tools and A2A protocols. Built using immutable composition pattern.
+**Manifests**: Auto-generated AgentCard (`.well-known/agent-card.json` and `.well-known/agent.json`) that describes your agent's capabilities, pricing, and identity for discovery tools and A2A protocols.
 
 **Payment Networks**: Accept payments on:
 
-- **EVM**: Base, Ethereum, Sepolia (ERC-20 USDC)
-- **Solana**: Mainnet, Devnet (SPL USDC)
+- **EVM/SVM (x402)**: Base, Base Sepolia, Polygon/Amoy, Avalanche/Ava Fuji, IoTeX, Abstract + testnet, Sei + testnet, Peaq, Story, EduChain, SKALE Base Sepolia, Solana mainnet/devnet (USDC)
 
 **Identity**: ERC-8004 on-chain identity for reputation and trust. Register once, reference across all networks.
 
@@ -205,16 +194,15 @@ Lucid Agents is a TypeScript monorepo built for multi-runtime agent deployment w
 Core agent runtime with entrypoints, manifests, and streaming support.
 
 ```typescript
-import { createRuntime } from '@lucid-agents/core';
+import { createAgentHttpRuntime } from '@lucid-agents/core';
 import { z } from 'zod';
 
-const runtime = createRuntime({
-  name: 'my-agent',
-  version: '1.0.0',
-  description: 'My first agent',
-});
+const runtime = createAgentHttpRuntime(
+  { name: 'my-agent', version: '1.0.0', description: 'My first agent' },
+  { payments: false } // enable x402 by supplying payments config
+);
 
-runtime.addEntrypoint({
+runtime.entrypoints.add({
   key: 'greet',
   input: z.object({ name: z.string() }),
   async handler({ input }) {
@@ -347,103 +335,51 @@ Each package contains detailed API documentation, environment variable reference
 
 ---
 
-## Example: Full-Featured Agent
-
-Here's a complete example showing identity, payments, and LLM integration:
+## Example: Paid streaming agent (Hono)
 
 ```typescript
 import { z } from 'zod';
 import { createAgentApp } from '@lucid-agents/hono';
-import { createAgentIdentity, getTrustConfig } from '@lucid-agents/identity';
-import { AI } from '@ax-llm/ax';
 
-// 1. Create on-chain identity
-const identity = await createAgentIdentity({
-  domain: 'my-agent.example.com',
-  autoRegister: true,
-});
-
-// 2. Initialize LLM
-const ai = new AI({
-  provider: 'openai',
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-// 3. Create agent with payments and identity
 const { app, addEntrypoint } = createAgentApp(
   {
     name: 'ai-assistant',
     version: '1.0.0',
-    description: 'AI assistant with on-chain reputation',
-    image: 'https://my-agent.example.com/og-image.png',
+    description: 'AI assistant with paid streaming',
   },
   {
-    config: {
-      payments: {
-        payTo: process.env.PAYMENTS_RECEIVABLE_ADDRESS!,
-        network: 'base-sepolia',
-        facilitatorUrl: 'https://facilitator.daydreams.systems',
-        defaultPrice: '5000', // 0.005 USDC per request
-      },
+    payments: {
+      payTo: process.env.PAYMENTS_RECEIVABLE_ADDRESS!,
+      network: 'base-sepolia',
+      facilitatorUrl: process.env.FACILITATOR_URL!,
     },
-    useConfigPayments: true,
-    trust: getTrustConfig(identity),
   }
 );
 
-// 4. Add paid entrypoint with streaming
 addEntrypoint({
   key: 'chat',
-  description: 'Chat with AI assistant',
-  input: z.object({
-    message: z.string(),
-    history: z
-      .array(
-        z.object({
-          role: z.enum(['user', 'assistant']),
-          content: z.string(),
-        })
-      )
-      .optional(),
-  }),
+  description: 'Echo stream (paid)',
+  input: z.object({ message: z.string() }),
   streaming: true,
+  // Prices are denominated in whole tokens (USDC); keep examples small
+  price: '0.05',
   async stream(ctx, emit) {
-    const messages = [
-      ...(ctx.input.history || []),
-      { role: 'user' as const, content: ctx.input.message },
-    ];
-
-    const stream = await ai.chat.stream({ messages });
-
-    for await (const chunk of stream) {
-      await emit({
-        kind: 'delta',
-        delta: chunk.delta,
-        mime: 'text/plain',
-      });
+    for (const char of ctx.input.message) {
+      await emit({ kind: 'delta', delta: char, mime: 'text/plain' });
     }
-
-    return {
-      output: { completed: true },
-      usage: { total_tokens: stream.usage.total_tokens },
-    };
+    await emit({ kind: 'text', text: `You said: ${ctx.input.message}` });
+    return { output: { done: true } };
   },
 });
 
-const port = Number(process.env.PORT ?? 3000);
-app.listen(port, () => {
-  console.log(`agent listening on http://localhost:${port}`);
-});
+export default app;
 ```
 
 **Features demonstrated:**
 
-- On-chain identity registration (ERC-8004)
-- Automatic x402 payment verification
-- Streaming LLM responses via SSE
-- Type-safe input/output schemas
-- Trust metadata in manifest
-- Open Graph tags for discovery
+- x402 pricing on entrypoint + paywall middleware via adapter
+- Streaming SSE responses with typed envelopes
+- Type-safe input schema (Zod)
 
 ---
 

@@ -39,7 +39,8 @@ const meta: AgentMeta = {
 const entrypoint: EntrypointDef = {
   key: 'echo',
   description: 'Echo back input',
-  price: '1000',
+  // Prices are denominated in whole tokens (USDC); use small decimals for examples
+  price: '0.05',
   network: 'base-sepolia',
   handler: async (ctx) => {
     return {
@@ -69,4 +70,3 @@ This package has no dependencies on other `@lucid-agents` packages. It only depe
 ## License
 
 MIT
-

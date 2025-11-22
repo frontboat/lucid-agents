@@ -61,3 +61,9 @@ create-agent-kit my-agent --adapter=tanstack-ui
 # Headless variant (API only)
 create-agent-kit my-agent --adapter=tanstack-headless
 ```
+
+## Docs
+
+- Architecture map: `docs/ARCHITECTURE.md`
+- TanStack adapter + paywall details: `docs/packages/tanstack.md`, `docs/packages/x402-tanstack-start.md`
+- Working notes for agents: `AGENTS.md`

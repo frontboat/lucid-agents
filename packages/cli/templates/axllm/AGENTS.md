@@ -311,7 +311,8 @@ addEntrypoint({
   key: "premium-generation",
   description: "Premium text generation",
   input: z.object({ prompt: z.string() }),
-  price: "10000", // Price in smallest unit
+  // Prices are denominated in whole tokens (USDC); use small decimals for examples
+  price: "0.1",
   handler: async ({ input }) => {
     // LLM logic here
   },

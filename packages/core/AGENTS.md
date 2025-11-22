@@ -122,9 +122,7 @@ addEntrypoint({
 });
 ```
 
-> ℹ️ Environment variables (`FACILITATOR_URL`, `PAYMENTS_RECEIVABLE_ADDRESS`, `NETWORK`,
-> `DEFAULT_PRICE`, `LUCID_API_URL`, etc.) are still respected. Values supplied
-> via `config` simply override the resolved defaults.
+> ℹ️ Environment variables (`FACILITATOR_URL`/`PAYMENTS_FACILITATOR_URL`, `PAYMENTS_RECEIVABLE_ADDRESS`, `NETWORK`/`PAYMENTS_NETWORK`, `LUCID_API_URL`, etc.) are still respected. Values supplied via `config` simply override the resolved defaults.
 
 ### Using the configured payments elsewhere
 
@@ -421,7 +419,8 @@ const { app, addEntrypoint } = createAgentApp(
 
 addEntrypoint({
   key: 'translate',
-  price: '10000', // 0.01 USDC - explicit per entrypoint
+  // Prices are denominated in whole tokens (USDC); use small decimals for examples
+  price: '0.01',
   async handler({ input }) {
     // ...
   },

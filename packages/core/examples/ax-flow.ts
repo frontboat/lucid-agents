@@ -9,8 +9,11 @@ import { flow } from '@ax-llm/ax';
  * with a handful of ideas the caller could explore next.
  *
  * Required environment variables:
- *   - OPENAI_API_KEY   (passed through to @ax-llm/ax)
- *   - PRIVATE_KEY      (used for x402 payments)
+ *   - OPENAI_API_KEY             (passed through to @ax-llm/ax)
+ *   - PAYMENTS_RECEIVABLE_ADDRESS (payee wallet for x402)
+ *   - PAYMENTS_FACILITATOR_URL    (x402 facilitator URL)
+ *   - PAYMENTS_NETWORK            (e.g., base, base-sepolia)
+ *   - PRIVATE_KEY (optional; used if you wire paid outbound fetches)
  */
 
 const axClient = createAxLLMClient({
@@ -56,9 +59,13 @@ const brainstormingFlow = flow<{ topic: string }>()
 
 const config: AgentKitConfig = {
   payments: {
-    payTo: '0xb308ed39d67D0d4BAe5BC2FAEF60c66BBb6AE429',
-    network: 'base',
-    defaultPrice: process.env.DEFAULT_PRICE ?? '0.03',
+    payTo:
+      (process.env.PAYMENTS_RECEIVABLE_ADDRESS as `0x${string}`) ??
+      '0xb308ed39d67D0d4BAe5BC2FAEF60c66BBb6AE429',
+    facilitatorUrl:
+      (process.env.PAYMENTS_FACILITATOR_URL as `${string}://${string}`) ??
+      'https://facilitator.daydreams.systems',
+    network: (process.env.PAYMENTS_NETWORK as any) ?? 'base-sepolia',
   },
 };
 
@@ -88,6 +95,8 @@ addEntrypoint({
     summary: z.string(),
     ideas: z.array(z.string()),
   }),
+  // Price is denominated in whole-token units (USDC); use a small decimal for examples
+  price: '0.03',
   async handler(ctx) {
     const topic = String(ctx.input.topic ?? '').trim();
     if (!topic) {

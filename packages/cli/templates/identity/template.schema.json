@@ -47,7 +47,7 @@
     },
     "PAYMENTS_RECEIVABLE_ADDRESS": {
       "type": "string",
-      "description": "Payment address - Ethereum (0x...) or Solana (Base58) format depending on network. Separate from PRIVATE_KEY which is used for EVM identity registration. Can be shared across multiple agents.",
+      "description": "Payment address - Ethereum (0x...) or Solana (Base58) format depending on network. Separate from AGENT_WALLET_PRIVATE_KEY which is used for EVM identity registration. Can be shared across multiple agents.",
       "default": "",
       "examples": [
         "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb0",
@@ -73,9 +73,9 @@
       "description": "Auto-register agent on ERC-8004 identity registry at startup",
       "default": true
     },
-    "PRIVATE_KEY": {
+    "AGENT_WALLET_PRIVATE_KEY": {
       "type": "string",
-      "description": "Wallet private key for signing transactions (required for identity registration)",
+      "description": "Agent wallet private key for signing transactions (required for identity registration)",
       "default": "",
       "examples": ["0x...", ""]
     }
@@ -88,5 +88,5 @@
     "RPC_URL",
     "CHAIN_ID"
   ],
-  "notes": "This template requires a PRIVATE_KEY for on-chain identity registration. Ensure the wallet has sufficient gas for the target network."
+  "notes": "This template requires an AGENT_WALLET_PRIVATE_KEY for on-chain identity registration. Ensure the wallet has sufficient gas for the target network."
 }

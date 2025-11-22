@@ -151,19 +151,10 @@ export { agent, handlers, runtime };
 
 ## Supported Networks
 
-Lucid-agents supports payment receiving on multiple blockchain networks:
+Payments use the x402 network union. Current supported values:
 
-### EVM Networks
-
-- `base` - Base mainnet (L2)
-- `base-sepolia` - Base Sepolia testnet
-- `ethereum` - Ethereum mainnet
-- `sepolia` - Ethereum Sepolia testnet
-
-### Solana Networks
-
-- `solana` - Solana mainnet
-- `solana-devnet` - Solana devnet
+- EVM: `abstract`, `abstract-testnet`, `base`, `base-sepolia`, `avalanche`, `avalanche-fuji`, `polygon`, `polygon-amoy`, `sei`, `sei-testnet`, `peaq`, `story`, `educhain`, `skale-base-sepolia`, `iotex`
+- SVM: `solana`, `solana-devnet`
 
 ### Address Formats
 

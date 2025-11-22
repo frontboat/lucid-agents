@@ -57,6 +57,11 @@ Full-featured agent with on-chain identity and verifiable attestations.
 - Domain-bound agent attestations
 - Decentralized agent networks
 
+### Trading Templates
+
+- `trading-data-agent` — sample data-fetching agent
+- `trading-recommendation-agent` — sample payments-enabled agent
+
 ## How It Works
 
 When you run the CLI:
@@ -96,7 +101,7 @@ The adapter provides the runtime skeleton (routing, server setup, build config),
 bunx @lucid-agents/cli <app-name> [options]
 
 Options:
-  -t, --template <id>   Select template (blank, axllm, axllm-flow, identity)
+  -t, --template <id>   Select template (blank, axllm, axllm-flow, identity, trading-data-agent, trading-recommendation-agent)
   -a, --adapter <id>    Select runtime adapter (hono, express, tanstack-ui, tanstack-headless, next)
   -i, --install         Run bun install after scaffolding
   --no-install          Skip bun install (default)
@@ -175,6 +180,7 @@ bunx @lucid-agents/cli my-agent --network=base --non-interactive
 - Payment network is independent of identity registration (identity uses EVM chain)
 - For identity template: EVM private key is for identity registration, payment address can be Solana
 - Payment address can be shared across multiple agents
+- Underlying payments packages support the full x402 network list; the wizard exposes the Base/Solana options shown above
 
 ````bash
 
@@ -202,7 +208,6 @@ bunx @lucid-agents/cli@latest verified-agent \
   --PAYMENTS_FACILITATOR_URL="https://facilitator.daydreams.systems" \
   --PAYMENTS_NETWORK="base-sepolia" \
   --PAYMENTS_RECEIVABLE_ADDRESS="0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb0" \
-  --PAYMENTS_DEFAULT_PRICE="0.1" \
   --RPC_URL="https://sepolia.base.org" \
   --CHAIN_ID="84532" \
   --IDENTITY_AUTO_REGISTER="true"
@@ -212,6 +217,14 @@ bunx @lucid-agents/cli@latest ai-agent \
   --template=axllm \
   --non-interactive \
   --AGENT_DESCRIPTION="AI-powered agent" \
+  --PAYMENTS_RECEIVABLE_ADDRESS="0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb0"
+
+# Trading recommendation template (payments-ready)
+bunx @lucid-agents/cli@latest trader \
+  --template=trading-recommendation-agent \
+  --adapter=tanstack-ui \
+  --non-interactive \
+  --PAYMENTS_NETWORK=base-sepolia \
   --PAYMENTS_RECEIVABLE_ADDRESS="0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb0"
 ````
 
@@ -224,7 +237,7 @@ bunx @lucid-agents/cli@latest ai-agent \
 
 ## Environment Variables
 
-The wizard writes all configuration to `.env`. You can edit these values anytime.
+The wizard writes all configuration to `.env`. You can edit these values anytime. Payment settings are stored under `PAYMENTS_*`; wallet keys depend on the template (LLM/blank templates expose `PRIVATE_KEY`, identity/trading templates emit `AGENT_WALLET_PRIVATE_KEY`/`DEVELOPER_WALLET_PRIVATE_KEY`).
 
 ### Common Variables (All Templates)
 
@@ -238,10 +251,11 @@ AGENT_DESCRIPTION=Your agent description
 PAYMENTS_FACILITATOR_URL=https://facilitator.daydreams.systems
 PAYMENTS_RECEIVABLE_ADDRESS=0xYourWalletAddress
 PAYMENTS_NETWORK=base-sepolia
-PAYMENTS_DEFAULT_PRICE=0.1
 
-# Wallet for transactions
+# Wallets (template-specific)
 PRIVATE_KEY=
+AGENT_WALLET_PRIVATE_KEY=
+DEVELOPER_WALLET_PRIVATE_KEY=
 ```
 
 ### Identity Template
@@ -253,6 +267,7 @@ AGENT_DOMAIN=agent.example.com
 IDENTITY_AUTO_REGISTER=true
 RPC_URL=https://sepolia.base.org
 CHAIN_ID=84532
+# Uses AGENT_WALLET_PRIVATE_KEY for registration/signing
 ```
 
 ### AxLLM Templates
@@ -331,7 +346,7 @@ bunx tsc --noEmit # Type-check
 
 ### Template not found
 
-Use a valid template ID: `blank`, `axllm`, `axllm-flow`, or `identity`.
+Use a valid template ID: `blank`, `axllm`, `axllm-flow`, `identity`, `trading-data-agent`, or `trading-recommendation-agent`.
 
 ### Directory already exists
 
