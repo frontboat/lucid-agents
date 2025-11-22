@@ -222,8 +222,8 @@ describe('createAgentApp invoke/stream routes', () => {
   });
 
   it('validates input schema and returns 400 on mismatch', async () => {
-    const runtime = createApp(meta).use(http()).build();
-    const { app, addEntrypoint } = createAgentApp(runtime);
+    const runtime = await createApp(meta).use(http()).build();
+    const { app, addEntrypoint } = await createAgentApp(runtime);
     addEntrypoint({
       key: 'echo',
       input: z.object({ text: z.string() }),
@@ -241,8 +241,8 @@ describe('createAgentApp invoke/stream routes', () => {
   });
 
   it('returns 501 when handler missing', async () => {
-    const runtime = createApp(meta).use(http()).build();
-    const { app, addEntrypoint } = createAgentApp(runtime);
+    const runtime = await createApp(meta).use(http()).build();
+    const { app, addEntrypoint } = await createAgentApp(runtime);
     addEntrypoint({ key: 'noop' });
     const res = await app.request('http://agent/entrypoints/noop/invoke', {
       method: 'POST',
@@ -255,8 +255,8 @@ describe('createAgentApp invoke/stream routes', () => {
   });
 
   it('returns handler result and run metadata', async () => {
-    const runtime = createApp(meta).use(http()).build();
-    const { app, addEntrypoint } = createAgentApp(runtime);
+    const runtime = await createApp(meta).use(http()).build();
+    const { app, addEntrypoint } = await createAgentApp(runtime);
     addEntrypoint({
       key: 'echo',
       handler: async ({ input }) => ({
@@ -400,8 +400,8 @@ describe('createAgentApp invoke/stream routes', () => {
   });
 
   it('emits SSE envelopes for stream entrypoint', async () => {
-    const runtime = createApp(meta).use(http()).build();
-    const { app, addEntrypoint } = createAgentApp(runtime);
+    const runtime = await createApp(meta).use(http()).build();
+    const { app, addEntrypoint } = await createAgentApp(runtime);
     addEntrypoint({
       key: 'stream',
       stream: async (_ctx, emit) => {
@@ -424,8 +424,8 @@ describe('createAgentApp invoke/stream routes', () => {
   });
 
   it('returns 400 when stream not supported', async () => {
-    const runtime = createApp(meta).use(http()).build();
-    const { app, addEntrypoint } = createAgentApp(runtime);
+    const runtime = await createApp(meta).use(http()).build();
+    const { app, addEntrypoint } = await createAgentApp(runtime);
     addEntrypoint({
       key: 'no-stream',
       handler: async () => ({ output: {} }),
@@ -443,8 +443,8 @@ describe('createAgentApp invoke/stream routes', () => {
 
 describe('Zod schema features (defaults, coercions, transformations)', () => {
   it('applies default values from Zod schema in invoke handler', async () => {
-    const runtime = createApp(meta).use(http()).build();
-    const { app, addEntrypoint } = createAgentApp(runtime);
+    const runtime = await createApp(meta).use(http()).build();
+    const { app, addEntrypoint } = await createAgentApp(runtime);
     addEntrypoint({
       key: 'with-defaults',
       input: z.object({
@@ -475,8 +475,8 @@ describe('Zod schema features (defaults, coercions, transformations)', () => {
   });
 
   it('applies coercions from Zod schema in invoke handler', async () => {
-    const runtime = createApp(meta).use(http()).build();
-    const { app, addEntrypoint } = createAgentApp(runtime);
+    const runtime = await createApp(meta).use(http()).build();
+    const { app, addEntrypoint } = await createAgentApp(runtime);
     addEntrypoint({
       key: 'with-coercion',
       input: z.object({
@@ -506,8 +506,8 @@ describe('Zod schema features (defaults, coercions, transformations)', () => {
   });
 
   it('applies transformations from Zod schema in invoke handler', async () => {
-    const runtime = createApp(meta).use(http()).build();
-    const { app, addEntrypoint } = createAgentApp(runtime);
+    const runtime = await createApp(meta).use(http()).build();
+    const { app, addEntrypoint } = await createAgentApp(runtime);
     addEntrypoint({
       key: 'with-transform',
       input: z.object({
@@ -538,8 +538,8 @@ describe('Zod schema features (defaults, coercions, transformations)', () => {
   });
 
   it('applies default values from Zod schema in stream handler', async () => {
-    const runtime = createApp(meta).use(http()).build();
-    const { app, addEntrypoint } = createAgentApp(runtime);
+    const runtime = await createApp(meta).use(http()).build();
+    const { app, addEntrypoint } = await createAgentApp(runtime);
     addEntrypoint({
       key: 'stream-defaults',
       input: z.object({
@@ -566,8 +566,8 @@ describe('Zod schema features (defaults, coercions, transformations)', () => {
   });
 
   it('applies transformations from Zod schema in stream handler', async () => {
-    const runtime = createApp(meta).use(http()).build();
-    const { app, addEntrypoint } = createAgentApp(runtime);
+    const runtime = await createApp(meta).use(http()).build();
+    const { app, addEntrypoint } = await createAgentApp(runtime);
     addEntrypoint({
       key: 'stream-transform',
       input: z.object({
