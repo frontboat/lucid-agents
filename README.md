@@ -165,11 +165,11 @@ Lucid Agents is a TypeScript monorepo built for multi-runtime agent deployment w
 Protocol-agnostic agent runtime with extension system.
 
 ```typescript
-import { createApp } from '@lucid-agents/core';
+import { createAgent } from '@lucid-agents/core';
 import { http } from '@lucid-agents/http';
 import { z } from 'zod';
 
-const app = await createApp({
+const agent = await createAgent({
   name: 'my-agent',
   version: '1.0.0',
   description: 'My first agent',
@@ -191,22 +191,26 @@ app.entrypoints.add({
 Hono adapter for building traditional HTTP servers.
 
 ```typescript
-import { createApp } from '@lucid-agents/core';
+import { createAgent } from '@lucid-agents/core';
 import { http } from '@lucid-agents/http';
 import { createAgentApp } from '@lucid-agents/hono';
 
-const app = await createApp({
+const agent = await createAgent({
   name: 'my-agent',
   version: '1.0.0',
 })
   .use(http())
   .build();
 
-const { app: agentApp, addEntrypoint } = createAgentApp(app);
+const { app, addEntrypoint } = await createAgentApp(agent);
 
 // Add entrypoints...
 
-export default agentApp; // Bun.serve or Hono serve
+// Export for Bun.serve or use Hono serve helper
+export default {
+  port: Number(process.env.PORT ?? 3000),
+  fetch: app.fetch,
+};
 ```
 
 #### [`@lucid-agents/tanstack`](packages/tanstack/README.md)
@@ -214,11 +218,11 @@ export default agentApp; // Bun.serve or Hono serve
 TanStack Start adapter with UI and headless variants.
 
 ```typescript
-import { createApp } from '@lucid-agents/core';
+import { createAgent } from '@lucid-agents/core';
 import { http } from '@lucid-agents/http';
 import { createTanStackRuntime } from '@lucid-agents/tanstack';
 
-const app = await createApp({
+const agent = await createAgent({
   name: 'my-agent',
   version: '1.0.0',
 })
@@ -234,17 +238,17 @@ export const { runtime: tanStackRuntime, handlers } =
 HTTP extension for request/response handling, streaming, and Server-Sent Events.
 
 ```typescript
-import { createApp } from '@lucid-agents/core';
+import { createAgent } from '@lucid-agents/core';
 import { http } from '@lucid-agents/http';
 
-const app = await createApp({
+const agent = await createAgent({
   name: 'my-agent',
   version: '1.0.0',
 })
   .use(http({ landingPage: true }))
   .build();
 
-// Access HTTP handlers via app.handlers
+// Access HTTP handlers via agent.handlers
 ```
 
 #### [`@lucid-agents/identity`](packages/identity/README.md)
@@ -252,12 +256,12 @@ const app = await createApp({
 ERC-8004 toolkit for on-chain identity, reputation, and validation.
 
 ```typescript
-import { createApp } from '@lucid-agents/core';
+import { createAgent } from '@lucid-agents/core';
 import { wallets } from '@lucid-agents/wallet';
 import { walletsFromEnv } from '@lucid-agents/wallet';
 import { createAgentIdentity } from '@lucid-agents/identity';
 
-const app = await createApp({
+const agent = await createAgent({
   name: 'my-agent',
   version: '1.0.0',
 })
@@ -276,11 +280,11 @@ const identity = await createAgentIdentity({
 x402 payment utilities for multi-network payment handling.
 
 ```typescript
-import { createApp } from '@lucid-agents/core';
+import { createAgent } from '@lucid-agents/core';
 import { payments } from '@lucid-agents/payments';
 import { paymentsFromEnv } from '@lucid-agents/payments';
 
-const app = await createApp({
+const agent = await createAgent({
   name: 'my-agent',
   version: '1.0.0',
 })
@@ -295,11 +299,11 @@ const app = await createApp({
 A2A Protocol client for agent-to-agent communication.
 
 ```typescript
-import { createApp } from '@lucid-agents/core';
+import { createAgent } from '@lucid-agents/core';
 import { http } from '@lucid-agents/http';
 import { a2a } from '@lucid-agents/a2a';
 
-const app = await createApp({
+const agent = await createAgent({
   name: 'my-agent',
   version: '1.0.0',
 })
@@ -322,10 +326,10 @@ const result = await app.a2a.client.invoke(
 AP2 (Agent Payments Protocol) extension for Agent Cards.
 
 ```typescript
-import { createApp } from '@lucid-agents/core';
+import { createAgent } from '@lucid-agents/core';
 import { ap2 } from '@lucid-agents/ap2';
 
-const app = await createApp({
+const agent = await createAgent({
   name: 'my-agent',
   version: '1.0.0',
 })
@@ -373,7 +377,7 @@ Here's a complete example showing identity, payments, and LLM integration with s
 
 ```typescript
 import { z } from 'zod';
-import { createApp } from '@lucid-agents/core';
+import { createAgent } from '@lucid-agents/core';
 import { http } from '@lucid-agents/http';
 import { wallets } from '@lucid-agents/wallet';
 import { walletsFromEnv } from '@lucid-agents/wallet';
@@ -390,7 +394,7 @@ const ai = new AI({
 });
 
 // 2. Build app with all extensions (identity extension handles ERC-8004 registration automatically)
-const app = await createApp({
+const agent = await createAgent({
   name: 'ai-assistant',
   version: '1.0.0',
   description: 'AI assistant with on-chain identity and streaming responses',
@@ -402,7 +406,7 @@ const app = await createApp({
   .use(identity({ config: identityFromEnv() }))
   .build();
 
-const { app: agentApp, addEntrypoint } = createAgentApp(app);
+const { app, addEntrypoint } = await createAgentApp(agent);
 
 // 4. Add paid entrypoint with streaming
 addEntrypoint({
@@ -443,10 +447,12 @@ addEntrypoint({
   },
 });
 
+// Export for Bun.serve or use Hono serve helper
 const port = Number(process.env.PORT ?? 3000);
-agentApp.listen(port, () => {
-  console.log(`agent listening on http://localhost:${port}`);
-});
+export default {
+  port,
+  fetch: app.fetch,
+};
 ```
 
 **Features demonstrated:**

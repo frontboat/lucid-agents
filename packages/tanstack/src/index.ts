@@ -20,5 +20,5 @@ export {
   type Network,
   type RouteConfig,
   type RoutesConfig,
-  type SolanaChainAddress,
+  type SolanaAddress,
 } from "./x402-paywall";

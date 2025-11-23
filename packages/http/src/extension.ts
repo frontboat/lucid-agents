@@ -231,18 +231,41 @@ export function http(
           }
 
           let rawInput: unknown;
-          if ('text' in message.content) {
+          // Guard: message.content must be an object to use 'in' operator
+          if (
+            message.content &&
+            typeof message.content === 'object' &&
+            !Array.isArray(message.content) &&
+            'text' in message.content
+          ) {
             try {
-              rawInput = JSON.parse(message.content.text);
+              rawInput = JSON.parse(
+                (message.content as { text: unknown }).text as string
+              );
             } catch {
-              rawInput = message.content.text;
+              rawInput = (message.content as { text: unknown }).text;
             }
           } else if (
+            message.content &&
+            typeof message.content === 'object' &&
+            !Array.isArray(message.content) &&
             'parts' in message.content &&
-            message.content.parts.length > 0
+            Array.isArray((message.content as { parts: unknown }).parts) &&
+            (message.content as { parts: unknown[] }).parts.length > 0
           ) {
-            const firstPart = message.content.parts[0];
-            rawInput = 'text' in firstPart ? firstPart.text : firstPart;
+            const firstPart = (message.content as { parts: unknown[] })
+              .parts[0];
+            // Guard: firstPart must be an object to use 'in' operator
+            if (
+              firstPart &&
+              typeof firstPart === 'object' &&
+              !Array.isArray(firstPart) &&
+              'text' in firstPart
+            ) {
+              rawInput = (firstPart as { text: unknown }).text;
+            } else {
+              rawInput = firstPart;
+            }
           } else {
             rawInput = message.content;
           }

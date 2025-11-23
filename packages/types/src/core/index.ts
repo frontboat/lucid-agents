@@ -1,5 +1,5 @@
 import type { Network, Resource } from 'x402/types';
-import { z, type z as ZType } from 'zod';
+import { z } from 'zod';
 
 import type { EntrypointPrice, SolanaAddress } from '../payments';
 import type { WalletsConfig, AgentWalletHandle } from '../wallets';

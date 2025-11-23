@@ -26,12 +26,14 @@ Refactor to protocol-agnostic extension-based architecture with HTTP as separate
 - **Removed types**: Removed `InvokeContext`, `StreamContext`, and `InvokeResult` from `@lucid-agents/core` - these are HTTP-specific and now in `@lucid-agents/http`
 - **All adapters**: Now use `createAgent().use(http()).build()` pattern and require HTTP extension
 - **Identity package**: `createAgentIdentity()` now requires `runtime: AgentRuntime` parameter (breaking change) - must have `runtime.wallets.agent` configured
+- **TanStack package**: Removed `SolanaChainAddress` type alias - use `SolanaAddress` from `@lucid-agents/types/payments` directly instead
 
 **New API:**
 
 ```typescript
 import { createAgent } from '@lucid-agents/core';
 import { http } from '@lucid-agents/http';
+import { wallets, walletsFromEnv } from '@lucid-agents/wallet';
 import { identity, identityFromEnv } from '@lucid-agents/identity';
 import { payments } from '@lucid-agents/payments';
 import { a2a } from '@lucid-agents/a2a';
@@ -84,8 +86,23 @@ const identity = await createAgentIdentity({
    - New: `agent.manifest.build(origin)`
 
 6. **Remove core invoke/stream calls:**
-   - Old: `agent.agent.invoke(key, input, ctx)`
-   - New: Use HTTP handlers or `invokeHandler` from `@lucid-agents/http` for direct calls
+   - Old: `agent.invoke(key, input, ctx)`
+   - New: Use HTTP handlers (via `runtime.handlers.invoke`) or import `invokeHandler` from `@lucid-agents/http` for direct calls:
+   ```typescript
+   import { invokeHandler } from '@lucid-agents/http';
+
+   const entrypoint = agent.agent.getEntrypoint(key);
+   if (!entrypoint) {
+     throw new Error(`Entrypoint "${key}" not found`);
+   }
+
+   const result = await invokeHandler(entrypoint, input, {
+     signal: ctx.signal,
+     headers: ctx.headers,
+     runId: ctx.runId,
+     runtime: agent,
+   });
+   ```
 
 7. **Update identity usage:**
    - Old: `createAgentIdentity({ domain, autoRegister })` (standalone, no runtime required)
@@ -93,4 +110,8 @@ const identity = await createAgentIdentity({
    - **Recommended**: Use automatic mode with `identity({ config: identityFromEnv() })` in extension chain
    - New helper: `identityFromEnv()` loads config from `AGENT_DOMAIN`, `RPC_URL`, `CHAIN_ID`, `REGISTER_IDENTITY` env vars
 
-8. **Update CLI templates and examples** to use new extension API
+8. **Update TanStack SolanaAddress import:**
+   - Old: `import type { SolanaChainAddress } from '@lucid-agents/tanstack';`
+   - New: `import type { SolanaAddress } from '@lucid-agents/types/payments';` (or re-export from `@lucid-agents/tanstack` as `SolanaAddress`)
+
+9. **Update CLI templates and examples** to use new extension API

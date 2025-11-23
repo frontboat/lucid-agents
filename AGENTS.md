@@ -429,7 +429,7 @@ bun run dev
 **createAgentApp(runtimeOrBuilder)**
 
 ```typescript
-import { createApp } from '@lucid-agents/core';
+import { createAgent } from '@lucid-agents/core';
 import { http } from '@lucid-agents/http';
 import { payments } from '@lucid-agents/payments';
 import { paymentsFromEnv } from '@lucid-agents/payments';
@@ -444,7 +444,7 @@ const agent = await createAgent({
   .use(payments({ config: paymentsFromEnv() }))
   .build();
 
-const { app, addEntrypoint } = createAgentApp(runtime);
+const { app, addEntrypoint } = await createAgentApp(agent);
 ```
 
 ### Express Adapter
@@ -452,7 +452,7 @@ const { app, addEntrypoint } = createAgentApp(runtime);
 **createAgentApp(runtimeOrBuilder)**
 
 ```typescript
-import { createApp } from '@lucid-agents/core';
+import { createAgent } from '@lucid-agents/core';
 import { http } from '@lucid-agents/http';
 import { createAgentApp } from '@lucid-agents/express';
 
@@ -464,7 +464,7 @@ const agent = await createAgent({
   .use(http())
   .build();
 
-const { app, addEntrypoint } = createAgentApp(runtime);
+const { app, addEntrypoint } = await createAgentApp(agent);
 
 // Express apps need to listen on a port
 const server = app.listen(process.env.PORT ?? 3000);
@@ -475,7 +475,7 @@ const server = app.listen(process.env.PORT ?? 3000);
 **createTanStackRuntime(runtimeOrBuilder)**
 
 ```typescript
-import { createApp } from '@lucid-agents/core';
+import { createAgent } from '@lucid-agents/core';
 import { http } from '@lucid-agents/http';
 import { createTanStackRuntime } from '@lucid-agents/tanstack';
 
@@ -487,7 +487,7 @@ const agent = await createAgent({
   .use(http())
   .build();
 
-const { runtime: tanStackRuntime, handlers } = createTanStackRuntime(runtime);
+const { runtime: tanStackRuntime, handlers } = await createTanStackRuntime(agent);
 
 // Use runtime.addEntrypoint() instead of addEntrypoint()
 tanStackRuntime.addEntrypoint({ ... });
@@ -528,7 +528,7 @@ const payments = paymentsFromEnv();
 **createAgentIdentity(options)**
 
 ```typescript
-import { createApp } from '@lucid-agents/core';
+import { createAgent } from '@lucid-agents/core';
 import { wallets } from '@lucid-agents/wallet';
 import { walletsFromEnv } from '@lucid-agents/wallet';
 import { createAgentIdentity } from '@lucid-agents/identity';
@@ -537,11 +537,11 @@ const agent = await createAgent({
   name: 'my-agent',
   version: '1.0.0',
 })
-  .use(wallets({ config: { wallets: walletsFromEnv() } }))
+  .use(wallets({ config: walletsFromEnv() }))
   .build();
 
 const identity = await createAgentIdentity({
-  runtime,
+  runtime: agent,
   domain: 'agent.example.com',
   autoRegister: true, // Register if not exists
 });

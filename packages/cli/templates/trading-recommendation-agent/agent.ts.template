@@ -1,25 +1,27 @@
 {{TEMPLATE_IMPORTS}}
+import { z } from 'zod';
+import { createAgent } from '@lucid-agents/core';
+import { http } from '@lucid-agents/http';
+import { wallets, walletsFromEnv } from '@lucid-agents/wallet';
+import { a2a } from '@lucid-agents/a2a';
 import {
   fetchAndSendMessage,
+  fetchAndInvoke,
   type Task,
   type TaskStatus,
 } from '@lucid-agents/a2a';
 import { createRuntimePaymentContext } from '@lucid-agents/payments';
 
 {{TEMPLATE_PRE_SETUP}}
-const appOptions = {
-  // Recommendation agent doesn't receive payments, but needs wallet to pay for data
-  config: {
-    wallets: {
-      agent: process.env.AGENT_WALLET_PRIVATE_KEY
-        ? {
-            type: 'private-key',
-            privateKey: process.env.AGENT_WALLET_PRIVATE_KEY,
-          }
-        : undefined,
-    },
-  },
-};
+const agent = await createAgent({
+  name: process.env.AGENT_NAME ?? 'trading-recommendation-agent',
+  version: process.env.AGENT_VERSION ?? '0.1.0',
+  description: process.env.AGENT_DESCRIPTION ?? 'Trading recommendation agent that buys data and generates signals',
+})
+  .use(http())
+  .use(wallets({ config: walletsFromEnv() }))
+  .use(a2a())
+  .build();
 
 {{TEMPLATE_POST_SETUP}}
 
@@ -31,7 +33,7 @@ const appOptions = {
  */
 const DATA_AGENT_URL = process.env.DATA_AGENT_URL || 'http://localhost:3001';
 
-addEntrypoint({
+agent.entrypoints.add({
   key: 'generateSignal',
   description: 'Generate trading signal by buying data and analyzing it',
   input: z.object({
@@ -196,7 +198,7 @@ addEntrypoint({
   },
 });
 
-addEntrypoint({
+agent.entrypoints.add({
   key: 'quickSignal',
   description: 'Quick signal using price data only (cheaper)',
   input: z.object({

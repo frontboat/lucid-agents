@@ -17,7 +17,7 @@
  * 4. Run: bun run examples/full-integration.ts
  */
 
-import { createApp } from '@lucid-agents/core';
+import { createAgent } from '@lucid-agents/core';
 import { wallets } from '@lucid-agents/wallet';
 import { walletsFromEnv } from '@lucid-agents/wallet';
 
