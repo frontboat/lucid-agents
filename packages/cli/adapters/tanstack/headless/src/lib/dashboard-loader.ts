@@ -79,10 +79,11 @@ export const loadDashboard = createServerFn({ method: 'GET' }).handler(
     // Step 2: Get payments config
     let payments: AgentPayments | null = null;
     try {
-      const configPayments = agent.config.payments;
+      const { runtime } = await import('@/lib/agent');
+      const configPayments = runtime.payments?.config;
 
       payments =
-        configPayments !== false && configPayments !== undefined
+        configPayments !== undefined
           ? {
               network: configPayments.network
                 ? String(configPayments.network)

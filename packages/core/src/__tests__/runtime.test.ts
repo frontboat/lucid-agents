@@ -211,7 +211,6 @@ describe('createAgent payments activation', () => {
     expect(agent.payments).toBeDefined();
     expect(agent.payments?.config).toBeDefined();
     expect(agent.payments?.isActive).toBe(false);
-    expect(agent.agent.config.payments).toBeUndefined();
   });
 
   it('activates payments when priced entrypoint is added', async () => {
@@ -234,8 +233,6 @@ describe('createAgent payments activation', () => {
     expect(agent.payments?.config).toBeDefined();
     expect(agent.payments?.isActive).toBe(true);
     expect(agent.payments?.config.payTo).toBe(paymentsConfig.payTo);
-    expect(agent.agent.config.payments).toBeDefined();
-    expect(agent.agent.config.payments?.payTo).toBe(paymentsConfig.payTo);
   });
 
   it('does not activate payments when non-priced entrypoint is added', async () => {
@@ -255,7 +252,6 @@ describe('createAgent payments activation', () => {
 
     expect(agent.payments).toBeDefined();
     expect(agent.payments?.isActive).toBe(false);
-    expect(agent.agent.config.payments).toBeUndefined();
   });
 
   it('activates payments when entrypoint with price object is added', async () => {
@@ -274,7 +270,6 @@ describe('createAgent payments activation', () => {
     expect(agent.payments).toBeDefined();
     expect(agent.payments?.config).toBeDefined();
     expect(agent.payments?.isActive).toBe(true);
-    expect(agent.agent.config.payments).toBeDefined();
   });
 
   it('keeps payments active after first activation', async () => {
@@ -303,7 +298,6 @@ describe('createAgent payments activation', () => {
 
     expect(agent.payments?.config).toBe(paymentsAfterFirst);
     expect(agent.payments?.isActive).toBe(true);
-    expect(agent.agent.config.payments).toBe(paymentsAfterFirst);
 
     agent.entrypoints.add({
       key: 'paid2',
@@ -331,7 +325,6 @@ describe('createAgent payments activation', () => {
     });
 
     expect(agent.payments).toBeUndefined();
-    expect(agent.agent.config.payments).toBeUndefined();
   });
 
   it('activates payments when entrypoints provided in options', async () => {
@@ -349,7 +342,6 @@ describe('createAgent payments activation', () => {
     expect(agent.payments).toBeDefined();
     expect(agent.payments?.config).toBeDefined();
     expect(agent.payments?.isActive).toBe(true);
-    expect(agent.agent.config.payments).toBeDefined();
   });
 
   it('does not activate payments when entrypoints without prices provided in options', async () => {
@@ -365,10 +357,9 @@ describe('createAgent payments activation', () => {
 
     expect(agent.payments).toBeDefined();
     expect(agent.payments?.isActive).toBe(false);
-    expect(agent.agent.config.payments).toBeUndefined();
   });
 
-  it('syncs runtime.payments?.config and agent.config.payments', async () => {
+  it('activates payments when entrypoint with price is added', async () => {
     const agent = await createAgent({ name: 'test', version: '1.0.0' })
       .use(payments({ config: paymentsConfig }))
       .build();
@@ -382,11 +373,9 @@ describe('createAgent payments activation', () => {
     });
 
     const runtimePayments = agent.payments?.config;
-    const agentPayments = agent.agent.config.payments;
 
-    expect(runtimePayments).toBe(agentPayments);
+    expect(runtimePayments).toBeDefined();
     expect(runtimePayments?.payTo).toBe(paymentsConfig.payTo);
-    expect(agentPayments?.payTo).toBe(paymentsConfig.payTo);
   });
 });
 

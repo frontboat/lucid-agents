@@ -183,11 +183,21 @@ export type AgentWalletKind = 'local' | 'lucid';
 
 /**
  * Handle to an agent wallet instance with its connector and optional access token management.
+ * Agent wallets can be either local or Lucid (server-orchestrated).
  */
 export interface AgentWalletHandle {
   kind: AgentWalletKind;
   connector: WalletConnector;
   setAccessToken?(token: string | null): void;
+}
+
+/**
+ * Handle to a developer wallet instance.
+ * Developer wallets are always local (private key-based) and do not support Lucid.
+ */
+export interface DeveloperWalletHandle {
+  kind: 'local';
+  connector: WalletConnector;
 }
 
 /**
@@ -197,6 +207,6 @@ export interface AgentWalletHandle {
 export type WalletsRuntime =
   | {
       agent?: AgentWalletHandle;
-      developer?: AgentWalletHandle;
+      developer?: DeveloperWalletHandle;
     }
   | undefined;

@@ -21,9 +21,10 @@ export {
 export { createPrivateKeySigner } from './private-key-signer';
 export {
   createAgentWallet,
+  createDeveloperWallet,
   createWalletsRuntime,
-  type WalletsRuntime,
 } from './create-agent-wallet';
+export type { WalletsRuntime } from '@lucid-agents/types/wallets';
 export { walletsFromEnv } from './env';
 export { wallets } from './extension';
 

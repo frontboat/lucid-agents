@@ -33,8 +33,6 @@ export class AgentBuilder {
     // Create base agent core
     const agent = createAgentCore({
       meta: this.meta,
-      wallets: undefined,
-      payments: undefined,
     });
 
     const manifestCache = new Map<string, AgentCardWithEntrypoints>();

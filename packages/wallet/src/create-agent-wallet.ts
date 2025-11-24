@@ -10,10 +10,13 @@ import {
 import type {
   AgentWalletFactoryOptions,
   AgentWalletHandle,
+  DeveloperWalletConfig,
+  DeveloperWalletHandle,
   LocalWalletOptions,
   LucidWalletOptions,
   WalletConnector,
   WalletsConfig,
+  WalletsRuntime,
 } from '@lucid-agents/types/wallets';
 
 export const createAgentWallet = (
@@ -34,6 +37,35 @@ const buildLocalWallet = (options: LocalWalletOptions): AgentWalletHandle => {
     throw new Error(
       'Local wallet configuration requires either a signer or privateKey'
     );
+  }
+
+  const connector = new LocalEoaWalletConnector(
+    resolveLocalConnectorOptions(options, signer)
+  );
+
+  return {
+    kind: 'local',
+    connector,
+  };
+};
+
+/**
+ * Creates a developer wallet handle.
+ * Developer wallets are always local (private key-based) and do not support Lucid.
+ */
+export const createDeveloperWallet = (
+  options: DeveloperWalletConfig
+): DeveloperWalletHandle => {
+  if (options.type !== 'local') {
+    throw new Error('Developer wallets must be local (type: "local")');
+  }
+
+  const signer = options.privateKey
+    ? createPrivateKeySigner(options.privateKey)
+    : null;
+
+  if (!signer) {
+    throw new Error('Developer wallet configuration requires a privateKey');
   }
 
   const connector = new LocalEoaWalletConnector(
@@ -82,11 +114,6 @@ const resolveLucidConnectorOptions = (
   authorizationContext: options.authorizationContext,
 });
 
-export type WalletsRuntime = {
-  agent?: AgentWalletHandle;
-  developer?: AgentWalletHandle;
-} | undefined;
-
 export function createWalletsRuntime(
   config: WalletsConfig | undefined
 ): WalletsRuntime {
@@ -97,7 +124,7 @@ export function createWalletsRuntime(
   return {
     agent: config.agent ? createAgentWallet(config.agent) : undefined,
     developer: config.developer
-      ? createAgentWallet(config.developer)
+      ? createDeveloperWallet(config.developer)
       : undefined,
   };
 }

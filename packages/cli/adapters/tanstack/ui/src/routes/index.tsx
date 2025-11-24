@@ -87,9 +87,9 @@ export const Route = createFileRoute('/')({
       }
     );
 
-    const configPayments = agent.config.payments;
+    const configPayments = runtime.payments?.config;
     const payments: AgentPayments | null =
-      configPayments !== false && configPayments !== undefined
+      configPayments !== undefined
         ? {
             network: configPayments.network
               ? String(configPayments.network)

@@ -32,10 +32,6 @@ export function payments(options?: {
       ) {
         if (entrypointHasExplicitPrice(entrypoint)) {
           paymentsRuntime.activate(entrypoint);
-          // Update agent config with activated payments config
-          (
-            runtime.agent.config as { payments?: PaymentsConfig | false }
-          ).payments = paymentsRuntime.config;
         }
       }
     },

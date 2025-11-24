@@ -79,7 +79,7 @@ async function loadDashboardPayload(origin: string): Promise<DashboardPayload> {
 
   const configPayments = runtime.payments?.config;
   const payments =
-    configPayments !== false && configPayments !== undefined
+    configPayments !== undefined
       ? {
           network: configPayments.network
             ? String(configPayments.network)
