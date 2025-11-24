@@ -3,9 +3,9 @@ import type {
   AgentCapabilities,
   AgentMeta,
   Manifest,
-  FetchFunction,
-  EntrypointDef,
-} from '@lucid-agents/types/core';
+} from '@lucid-agents/types/a2a';
+import type { EntrypointDef } from '@lucid-agents/types/core';
+import type { FetchFunction } from '@lucid-agents/types/http';
 import type { BuildAgentCardOptions } from '@lucid-agents/types/a2a';
 import { z } from 'zod';
 

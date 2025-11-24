@@ -1,7 +1,5 @@
-import type {
-  AgentCardWithEntrypoints,
-  FetchFunction,
-} from '@lucid-agents/types/core';
+import type { FetchFunction } from '@lucid-agents/types/http';
+import type { AgentCardWithEntrypoints } from '@lucid-agents/types/a2a';
 import type {
   InvokeAgentResult,
   StreamEmit,

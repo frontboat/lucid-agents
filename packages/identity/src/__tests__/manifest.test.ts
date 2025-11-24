@@ -1,4 +1,4 @@
-import type { AgentCardWithEntrypoints } from '@lucid-agents/types/core';
+import type { AgentCardWithEntrypoints } from '@lucid-agents/types/a2a';
 import type { TrustConfig } from '@lucid-agents/types/identity';
 import { describe, expect, it } from 'bun:test';
 

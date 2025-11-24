@@ -1,8 +1,5 @@
-import type {
-  AgentCardWithEntrypoints,
-  AgentRuntime,
-  Extension,
-} from '@lucid-agents/types/core';
+import type { AgentCardWithEntrypoints } from '@lucid-agents/types/a2a';
+import type { AgentRuntime, Extension } from '@lucid-agents/types/core';
 import type { TrustConfig } from '@lucid-agents/types/identity';
 
 import type { CreateAgentIdentityOptions } from './init';

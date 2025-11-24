@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import type { AgentCardWithEntrypoints } from '@lucid-agents/types/core';
+import type { AgentCardWithEntrypoints } from '@lucid-agents/types/a2a';
 import type { EntrypointDef } from '@lucid-agents/types/core';
 import { z } from 'zod';
 

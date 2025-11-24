@@ -1,4 +1,5 @@
-import type { AgentRuntime, FetchFunction } from '@lucid-agents/types/core';
+import type { AgentRuntime } from '@lucid-agents/types/core';
+import type { FetchFunction } from '@lucid-agents/types/http';
 import type {
   A2ARuntime,
   CreateA2ARuntimeOptions,

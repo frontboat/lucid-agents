@@ -20,8 +20,10 @@ export type {
   EntrypointDef,
   EntrypointHandler,
   EntrypointStreamHandler,
+} from '@lucid-agents/types/core';
+export type { AgentConfig } from '@lucid-agents/types/core';
+export type {
   StreamEnvelope,
   StreamPushEnvelope,
   StreamResult,
-} from '@lucid-agents/types/core';
-export type { AgentConfig } from '@lucid-agents/types/core';
+} from '@lucid-agents/types/http';

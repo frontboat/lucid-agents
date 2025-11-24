@@ -1,8 +1,10 @@
 import { buildAgentCard } from '@lucid-agents/a2a';
 import type {
   AgentCardWithEntrypoints,
-  AgentKitConfig,
   AgentMeta,
+} from '@lucid-agents/types/a2a';
+import type {
+  AgentKitConfig,
   AgentRuntime,
   BuildContext,
   EntrypointDef,

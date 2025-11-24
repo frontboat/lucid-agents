@@ -1,4 +1,4 @@
-import type { AgentMeta } from '@lucid-agents/types/core';
+import type { AgentMeta } from '@lucid-agents/types/a2a';
 
 import { AgentBuilder } from './extensions/builder';
 

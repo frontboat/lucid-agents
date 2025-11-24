@@ -1,4 +1,4 @@
-import type { AgentCardWithEntrypoints, Manifest, PaymentMethod } from '@lucid-agents/types/core';
+import type { AgentCardWithEntrypoints, Manifest, PaymentMethod } from '@lucid-agents/types/a2a';
 import type { EntrypointDef } from '@lucid-agents/types/core';
 import type { PaymentsConfig } from '@lucid-agents/types/payments';
 

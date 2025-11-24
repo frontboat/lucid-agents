@@ -1,10 +1,10 @@
 import type {
-  AgentCardWithEntrypoints,
   AgentRuntime,
   BuildContext,
   EntrypointDef,
   Extension,
 } from '@lucid-agents/types/core';
+import type { AgentCardWithEntrypoints } from '@lucid-agents/types/a2a';
 import type {
   PaymentsConfig,
   PaymentsRuntime,

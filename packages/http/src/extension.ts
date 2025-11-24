@@ -13,11 +13,11 @@ import type {
   BuildContext,
   EntrypointDef,
   Extension,
-  StreamResult,
 } from '@lucid-agents/types/core';
 import type {
   HttpExtensionOptions,
   AgentHttpHandlers,
+  StreamResult,
 } from '@lucid-agents/types/http';
 
 import { ZodValidationError } from '@lucid-agents/types/core';

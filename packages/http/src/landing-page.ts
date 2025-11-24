@@ -1,5 +1,5 @@
 import { resolvePrice } from '@lucid-agents/payments';
-import type { AgentMeta } from '@lucid-agents/types/core';
+import type { AgentMeta } from '@lucid-agents/types/a2a';
 import type { PaymentsConfig } from '@lucid-agents/types/payments';
 import { html } from 'hono/html';
 import type { HtmlEscapedString } from 'hono/utils/html';

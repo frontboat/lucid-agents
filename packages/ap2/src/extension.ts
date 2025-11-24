@@ -1,9 +1,9 @@
 import type {
-  AgentCardWithEntrypoints,
   AgentRuntime,
   BuildContext,
   Extension,
 } from '@lucid-agents/types/core';
+import type { AgentCardWithEntrypoints } from '@lucid-agents/types/a2a';
 import type { AP2Config, AP2Runtime } from '@lucid-agents/types/ap2';
 
 import { createAgentCardWithAP2 } from './manifest';
